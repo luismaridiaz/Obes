@@ -1,0 +1,2377 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
+  <meta name="theme-color" content="#0a1f38">
+  <title>ObesClin Pro</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+  <style>
+:root{
+  --bg:#f0f4f8;--surface:#fff;--surf2:#f5f8fa;--surf3:#eaf0f6;
+  --border:#dde4ec;--border2:#c8d5e0;
+  --ink:#0d1b2a;--ink2:#2c4a62;--ink3:#607d8f;
+  --bot-bg:#0a1f38;--bot-txt:#cce0f5;
+  --user-bg:#1565c0;--brand:#1565c0;--brand2:#0d47a1;
+  --teal:#006064;--amber:#e65100;--red:#b71c1c;--green:#1b5e20;
+  --sys-bg:#e8f5e9;--sys-bdr:#66bb6a;
+  --warn-bg:#fff8e1;--warn-bdr:#ffca28;
+  --err-bg:#ffebee;--err-bdr:#ef9a9a;
+  --info-bg:#e3f2fd;--info-bdr:#64b5f6;
+  --r:14px;--r-sm:10px;--r-xs:7px;
+  --nav-h:58px;
+}
+@media(prefers-color-scheme:dark){
+  :root{
+    --bg:#060f1a;--surface:#0d1f33;--surf2:#071526;--surf3:#0a1929;
+    --border:#1a3550;--border2:#1e3f60;
+    --ink:#d4e8f8;--ink2:#7aadcc;--ink3:#4a7090;
+    --sys-bg:#0a2e0c;--sys-bdr:#388e3c;
+    --warn-bg:#1c1200;--warn-bdr:#f57f17;
+    --err-bg:#1c0505;--err-bdr:#c62828;
+    --info-bg:#071a38;--info-bdr:#1565c0;
+  }
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{-webkit-text-size-adjust:100%;}
+body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--ink);height:100dvh;display:flex;flex-direction:column;overflow:hidden;}
+
+/* ── TOPBAR ── */
+.topbar{background:var(--bot-bg);color:white;padding:10px 14px;display:flex;align-items:center;gap:9px;flex-shrink:0;box-shadow:0 2px 10px rgba(0,0,0,.4);}
+.t-av{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#42a5f5,#1565c0);display:flex;align-items:center;justify-content:center;font-size:.9rem;flex-shrink:0;}
+.t-name{font-size:.86rem;font-weight:800;}
+.t-sub{font-size:.62rem;opacity:.55;margin-top:1px;}
+.t-right{margin-left:auto;display:flex;gap:7px;align-items:center;}
+.t-badge{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);color:white;padding:3px 9px;border-radius:20px;font-size:.65rem;font-weight:700;}
+
+/* ── PROGRESS ── */
+.prog{height:3px;background:rgba(255,255,255,.1);flex-shrink:0;}
+.prog-f{height:100%;background:linear-gradient(90deg,#42a5f5,#26c6da);transition:width .4s;width:0%;}
+
+/* ── VIEWS ── */
+.views{flex:1;overflow:hidden;position:relative;}
+.view{position:absolute;inset:0;overflow-y:auto;display:none;flex-direction:column;}
+.view.on{display:flex;}
+
+/* ── BOTTOM NAV ── */
+.nav{background:var(--surface);border-top:1.5px solid var(--border);display:flex;flex-shrink:0;height:var(--nav-h);}
+.nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;border:none;background:none;font-family:'Inter',sans-serif;color:var(--ink3);transition:.15s;padding:6px 0;}
+.nav-btn.on{color:var(--brand);}
+.nav-btn .ni{font-size:1.2rem;}
+.nav-btn .nl{font-size:.6rem;font-weight:700;}
+
+/* ── CHAT ── */
+.chat{flex:1;overflow-y:auto;padding:13px 12px;display:flex;flex-direction:column;gap:9px;scroll-behavior:smooth;}
+.inp-area{background:var(--surface);border-top:1.5px solid var(--border);padding:10px 12px;flex-shrink:0;display:flex;flex-direction:column;gap:7px;max-height:52vh;overflow-y:auto;}
+
+/* Bubbles */
+.br{display:flex;gap:7px;align-items:flex-end;}
+.br.bot{align-self:flex-start;max-width:90%;}
+.br.user{align-self:flex-end;flex-direction:row-reverse;max-width:83%;}
+.br.sys,.br.warn,.br.err,.br.info{align-self:stretch;width:100%;}
+.av{width:25px;height:25px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:.72rem;background:linear-gradient(135deg,#42a5f5,#1565c0);color:white;}
+.bbl{padding:9px 12px;border-radius:var(--r-sm);font-size:.82rem;line-height:1.6;animation:bIn .18s ease;}
+@keyframes bIn{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+.bbl.bot{background:var(--bot-bg);color:var(--bot-txt);border-radius:4px var(--r-sm) var(--r-sm) var(--r-sm);}
+.bbl.user{background:var(--user-bg);color:#fff;border-radius:var(--r-sm) 4px var(--r-sm) var(--r-sm);}
+.bbl.sys{background:var(--sys-bg);border:1.5px solid var(--sys-bdr);border-radius:var(--r-sm);color:var(--ink);width:100%;}
+.bbl.warn{background:var(--warn-bg);border:1.5px solid var(--warn-bdr);border-radius:var(--r-sm);color:var(--ink);width:100%;}
+.bbl.err{background:var(--err-bg);border:1.5px solid var(--err-bdr);border-radius:var(--r-sm);color:var(--ink);width:100%;}
+.bbl.info{background:var(--info-bg);border:1.5px solid var(--info-bdr);border-radius:var(--r-sm);color:var(--ink);width:100%;}
+.bbl strong{color:var(--ink);font-weight:700;}
+.bbl.bot strong{color:white;}
+.typing{display:flex;gap:4px;align-items:center;padding:7px 11px;}
+.typing span{width:5px;height:5px;border-radius:50%;background:rgba(204,224,245,.5);animation:bl 1.2s infinite;}
+.typing span:nth-child(2){animation-delay:.2s;}.typing span:nth-child(3){animation-delay:.4s;}
+@keyframes bl{0%,80%,100%{opacity:.2}40%{opacity:1}}
+
+/* Input elements */
+.chips{display:flex;flex-wrap:wrap;gap:6px;}
+.chip{padding:7px 13px;border:1.5px solid var(--border2);border-radius:30px;font-size:.79rem;font-weight:600;cursor:pointer;background:var(--surf2);color:var(--ink2);transition:.13s;user-select:none;font-family:'Inter',sans-serif;}
+.chip:hover{border-color:var(--brand);color:var(--brand);}
+.chip.sel{background:var(--brand);color:white;border-color:var(--brand);}
+.n-row{display:flex;flex-direction:column;gap:2px;}
+.n-lbl{font-size:.71rem;font-weight:600;color:var(--ink2);}
+.n-inp{width:100%;padding:9px 11px;font-size:.87rem;border:1.5px solid var(--border2);border-radius:var(--r-sm);background:var(--surf2);color:var(--ink);font-family:'Inter',sans-serif;-webkit-appearance:none;}
+.n-inp:focus{outline:none;border-color:var(--brand);box-shadow:0 0 0 3px rgba(21,101,192,.11);}
+.n-hint{font-size:.64rem;color:var(--ink3);margin-top:2px;line-height:1.35;}
+.cbtn{padding:11px;background:linear-gradient(135deg,var(--brand),var(--brand2));color:white;border:none;border-radius:var(--r-sm);font-size:.85rem;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;width:100%;margin-top:3px;box-shadow:0 2px 8px rgba(21,101,192,.26);transition:.15s;}
+.cbtn:hover{filter:brightness(1.07);}
+.cbtn:active{transform:scale(.98);}
+.chk-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px;}
+.chk-item{display:flex;align-items:center;gap:6px;padding:7px 9px;border:1.5px solid var(--border);border-radius:var(--r-sm);cursor:pointer;font-size:.72rem;font-weight:500;user-select:none;color:var(--ink2);transition:.13s;}
+.chk-item:hover{border-color:var(--brand);}
+.chk-item.on{background:rgba(21,101,192,.09);border-color:var(--brand);color:var(--brand);font-weight:700;}
+.chk-dot{width:13px;height:13px;border-radius:3px;border:1.5px solid var(--border2);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:.57rem;}
+.chk-item.on .chk-dot{background:var(--brand);border-color:var(--brand);color:white;}
+.sf-grid{display:flex;flex-direction:column;gap:6px;}
+.sf-row{background:var(--surf2);border:1.5px solid var(--border);border-radius:var(--r-sm);padding:9px 11px;}
+.sf-q{font-size:.78rem;font-weight:700;color:var(--ink);margin-bottom:6px;}
+.sf-opts{display:flex;gap:5px;flex-wrap:wrap;}
+.sf-opt{padding:5px 11px;border:1.5px solid var(--border2);border-radius:30px;font-size:.73rem;font-weight:600;cursor:pointer;color:var(--ink2);transition:.13s;}
+.sf-opt.sel{background:var(--brand);color:white;border-color:var(--brand);}
+
+/* Tags */
+.tag{display:inline-flex;align-items:center;padding:2px 7px;border-radius:20px;font-size:.67rem;font-weight:700;margin:1px;}
+.t-ok{background:#c8e6c9;color:var(--green);}
+.t-warn{background:#fff9c4;color:var(--amber);}
+.t-err{background:#ffcdd2;color:var(--red);}
+.t-info{background:#bbdefb;color:#0d47a1;}
+
+/* ── DIAGNOSIS / PLAN ── */
+.diag-card{border-radius:var(--r-sm);overflow:hidden;border:2px solid var(--border2);}
+.diag-top{padding:13px 15px;color:#fff;}
+.d0{background:linear-gradient(135deg,#1b5e20,#2e7d32);}
+.d1{background:linear-gradient(135deg,#e65100,#bf360c);}
+.d2{background:linear-gradient(135deg,#b71c1c,#7f0000);}
+.diag-lbl{font-size:.64rem;font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:rgba(255,255,255,.88);}
+.diag-val{font-size:1.05rem;font-weight:800;margin-top:4px;line-height:1.3;color:#fff;}
+.diag-body{background:var(--surface);border-top:2px solid var(--border2);padding:12px 14px;font-size:.81rem;line-height:1.7;color:var(--ink);}
+.diag-body strong{color:var(--ink);font-weight:700;}
+.al{border-radius:var(--r-xs);padding:9px 12px;margin-top:5px;font-size:.8rem;color:var(--ink);line-height:1.6;border-left:4px solid;}
+.al.e{background:var(--err-bg);border-color:var(--red);}
+.al.w{background:var(--warn-bg);border-color:var(--amber);}
+.al.i{background:var(--info-bg);border-color:var(--brand);}
+.al strong{color:var(--ink);font-weight:700;}
+.plan-blk{background:var(--surface);border:2px solid var(--border2);border-radius:var(--r-sm);padding:12px 13px;margin-top:6px;}
+.plan-h{font-size:.84rem;font-weight:800;color:var(--ink);margin-bottom:8px;}
+.plan-b{font-size:.8rem;line-height:1.7;color:var(--ink);}
+.plan-b strong{font-weight:700;color:var(--ink);}
+.mrow{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0;}
+.mc{background:var(--bot-bg);color:#fff;border-radius:var(--r-xs);padding:8px 12px;text-align:center;}
+.mc-v{font-size:1rem;font-weight:700;font-family:'JetBrains Mono',monospace;color:#fff;line-height:1;}
+.mc-l{font-size:.6rem;color:rgba(255,255,255,.85);margin-top:3px;font-weight:600;}
+.dgrid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:7px;}
+.dc{background:var(--surf2);border:1.5px solid var(--border2);border-radius:var(--r-xs);padding:9px 11px;}
+.dn{font-size:.76rem;font-weight:800;color:var(--ink);margin-bottom:2px;}
+.dd{font-size:.71rem;color:var(--ink);line-height:1.45;}
+.dd strong{font-weight:700;}
+
+/* ── SAVE MODAL ── */
+.modal-ov{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:400;display:none;align-items:flex-end;}
+.modal-ov.on{display:flex;}
+.modal{background:var(--surface);border-radius:20px 20px 0 0;padding:20px 16px 32px;width:100%;box-shadow:0 -8px 32px rgba(0,0,0,.2);}
+.modal h3{font-size:.95rem;font-weight:800;margin-bottom:14px;}
+.modal-drag{width:40px;height:4px;background:var(--border2);border-radius:4px;margin:0 auto 16px;}
+.m-row{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:10px;}
+.m-field{display:flex;flex-direction:column;gap:3px;}
+.m-lbl{font-size:.71rem;font-weight:600;color:var(--ink2);}
+.m-inp{padding:9px 11px;font-size:.85rem;border:1.5px solid var(--border2);border-radius:var(--r-sm);background:var(--surf2);color:var(--ink);font-family:'Inter',sans-serif;width:100%;}
+.m-inp:focus{outline:none;border-color:var(--brand);}
+.btn-row{display:flex;gap:8px;margin-top:12px;}
+.btn{padding:11px;border:none;border-radius:var(--r-sm);font-size:.84rem;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;flex:1;transition:.15s;}
+.btn-p{background:linear-gradient(135deg,var(--brand),var(--brand2));color:white;box-shadow:0 2px 8px rgba(21,101,192,.25);}
+.btn-g{background:var(--surf2);color:var(--ink2);border:1.5px solid var(--border2);}
+
+/* ── PATIENT LIST ── */
+.list-wrap{padding:14px 13px;display:flex;flex-direction:column;gap:10px;}
+.list-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;}
+.list-title{font-size:1rem;font-weight:800;}
+.list-actions{display:flex;gap:7px;}
+.icon-btn{background:var(--surf2);border:1.5px solid var(--border2);color:var(--ink2);padding:6px 12px;border-radius:20px;font-size:.72rem;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;}
+.icon-btn:hover{border-color:var(--brand);color:var(--brand);}
+.pt-card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:13px 14px;cursor:pointer;transition:.15s;box-shadow:0 1px 4px rgba(0,0,0,.06);}
+.pt-card:hover{border-color:var(--brand);box-shadow:0 2px 12px rgba(21,101,192,.12);}
+.pt-top{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
+.pt-av{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,var(--brand),var(--brand2));color:white;display:flex;align-items:center;justify-content:center;font-size:.85rem;font-weight:800;flex-shrink:0;}
+.pt-name{font-size:.88rem;font-weight:700;}
+.pt-date{font-size:.68rem;color:var(--ink3);margin-top:1px;}
+.pt-diag{font-size:.76rem;color:var(--ink2);margin-top:2px;}
+.pt-chips{display:flex;flex-wrap:wrap;gap:5px;}
+.pt-chip{background:var(--surf2);border:1px solid var(--border);border-radius:20px;padding:2px 9px;font-size:.65rem;font-weight:600;color:var(--ink3);}
+.empty-state{text-align:center;padding:40px 20px;color:var(--ink3);}
+.empty-state .ei{font-size:2.5rem;margin-bottom:10px;}
+.empty-state .et{font-size:.88rem;font-weight:600;margin-bottom:5px;}
+.empty-state .es{font-size:.78rem;}
+
+/* ── PATIENT DETAIL ── */
+.det-hdr{background:var(--bot-bg);color:white;padding:13px 14px 12px;}
+.det-back{font-size:.75rem;opacity:.7;cursor:pointer;margin-bottom:6px;}
+.det-name{font-size:1.05rem;font-weight:800;}
+.det-sub{font-size:.7rem;opacity:.6;margin-top:2px;}
+.det-body{padding:13px 13px;display:flex;flex-direction:column;gap:12px;}
+.section-title{font-size:.75rem;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;}
+.visit-card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r-sm);padding:11px 13px;}
+.v-date{font-size:.72rem;font-weight:700;color:var(--brand);margin-bottom:5px;}
+.v-diag{font-size:.83rem;font-weight:700;margin-bottom:5px;}
+.v-row{display:flex;justify-content:space-between;font-size:.75rem;border-bottom:1px solid var(--border);padding:3px 0;}
+.v-row:last-child{border:none;}
+.v-k{color:var(--ink3);}
+.v-v{font-weight:600;color:var(--ink);}
+canvas.chart{width:100%;border-radius:var(--r-sm);background:var(--surface);border:1.5px solid var(--border);}
+
+/* ── RESEARCH ── */
+.res-wrap{padding:13px 13px;display:flex;flex-direction:column;gap:12px;}
+.stat-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;}
+.stat-box{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r-sm);padding:10px 11px;text-align:center;}
+.stat-v{font-size:1.3rem;font-weight:800;font-family:'JetBrains Mono',monospace;color:var(--ink);}
+.stat-l{font-size:.62rem;font-weight:700;color:var(--ink3);margin-top:2px;}
+.table-2x2{width:100%;border-collapse:collapse;font-size:.77rem;border-radius:var(--r-sm);overflow:hidden;}
+.table-2x2 th{background:var(--surf3);padding:7px 9px;font-weight:700;text-align:center;}
+.table-2x2 td{padding:7px 9px;border:1px solid var(--border);text-align:center;background:var(--surface);}
+.table-2x2 .c-tp{background:#c8e6c9;font-weight:700;}
+.table-2x2 .c-tn{background:#c8e6c9;font-weight:700;}
+.table-2x2 .c-fp{background:#ffcdd2;font-weight:700;}
+.table-2x2 .c-fn{background:#ffcdd2;font-weight:700;}
+.gs-row{display:flex;align-items:center;justify-content:space-between;padding:8px 10px;background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r-sm);margin-bottom:5px;font-size:.78rem;}
+.gs-name{font-weight:600;color:var(--ink);}
+.gs-idx{font-size:.7rem;color:var(--ink2);}
+.gs-sel{display:flex;gap:5px;}
+.gs-btn{padding:4px 10px;border:1.5px solid var(--border2);border-radius:20px;font-size:.68rem;font-weight:700;cursor:pointer;background:var(--surf2);color:var(--ink2);font-family:'Inter',sans-serif;}
+.gs-btn.pos{background:var(--err-bg);border-color:var(--red);color:var(--red);}
+.gs-btn.neg{background:var(--sys-bg);border-color:var(--green);color:var(--green);}
+.warn-n30{background:var(--warn-bg);border:1.5px solid var(--warn-bdr);border-radius:var(--r-sm);padding:10px 12px;font-size:.77rem;color:var(--amber);font-weight:600;}
+
+@media print{
+  .nav,.inp-area,.topbar,.prog,.t-right,.modal-ov{display:none!important;}
+  .view{display:block!important;position:static!important;overflow:visible!important;}
+  .views{overflow:visible!important;height:auto!important;}
+  body{overflow:visible!important;height:auto!important;}
+}
+  
+/* ── PROJECTION MODAL ── */
+.proj-ov{position:fixed;inset:0;background:rgba(0,0,0,.52);z-index:500;display:none;align-items:flex-end;}
+.proj-ov.on{display:flex;}
+.proj-sheet{background:var(--surface);border-radius:22px 22px 0 0;width:100%;max-height:88vh;display:flex;flex-direction:column;box-shadow:0 -8px 32px rgba(0,0,0,.22);}
+.proj-drag{width:40px;height:4px;background:var(--border2);border-radius:4px;margin:10px auto 0;flex-shrink:0;}
+.proj-hdr{display:flex;align-items:center;justify-content:space-between;padding:12px 16px 10px;border-bottom:1.5px solid var(--border);flex-shrink:0;}
+.proj-ttl{font-size:.9rem;font-weight:800;color:var(--ink);}
+.proj-x{width:27px;height:27px;border-radius:50%;border:none;background:var(--surf2);color:var(--ink2);cursor:pointer;font-size:.8rem;font-family:'Inter',sans-serif;}
+.proj-body{overflow-y:auto;padding:14px 15px 30px;flex:1;}
+.proj-peso{display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap;}
+.proj-peso label{font-size:.73rem;font-weight:700;color:var(--ink2);flex:1;min-width:120px;}
+.proj-peso input[type=range]{flex:2;min-width:100px;accent-color:var(--brand);}
+.proj-badge{background:var(--bot-bg);color:#fff;border-radius:10px;padding:7px 13px;text-align:center;min-width:72px;}
+.proj-badge .pv{font-size:1.1rem;font-weight:800;font-family:'JetBrains Mono',monospace;color:#fff;}
+.proj-badge .pl{font-size:.58rem;opacity:.8;margin-top:2px;}
+.proj-note{font-size:.7rem;color:var(--ink3);font-style:italic;margin-top:10px;line-height:1.5;}
+.proj-tbl{width:100%;border-collapse:collapse;font-size:.75rem;margin-top:10px;}
+.proj-tbl th{padding:5px 8px;text-align:left;font-weight:700;color:var(--ink3);border-bottom:1.5px solid var(--border);background:var(--surf2);}
+.proj-tbl td{padding:5px 8px;border-bottom:1px solid var(--border);color:var(--ink);vertical-align:middle;}
+.proj-tbl tr:last-child td{border-bottom:none;}
+.proj-tbl tr:hover td{background:var(--surf2);}
+.proj-bar-wrap{width:100%;background:var(--border);border-radius:4px;height:10px;overflow:hidden;}
+.proj-bar{height:100%;border-radius:4px;transition:width .4s ease;}
+.proj-open-btn{width:100%;margin-top:7px;padding:9px;background:linear-gradient(135deg,#006064,#00897B);color:white;border:none;border-radius:var(--r-sm);font-size:.82rem;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;display:flex;align-items:center;justify-content:center;gap:6px;}
+.proj-open-btn:hover{filter:brightness(1.08);}
+
+/* ── LAB VIEW ── */
+.lab-card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:13px 14px;}
+.lab-card-h{font-size:.82rem;font-weight:800;color:var(--ink);margin-bottom:10px;display:flex;align-items:center;gap:7px;}
+.lab-row{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:9px;}
+.lab-row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:9px;}
+@media(max-width:400px){.lab-row,.lab-row3{grid-template-columns:1fr;}}
+.lab-f{display:flex;flex-direction:column;gap:3px;}
+.lab-l{font-size:.71rem;font-weight:600;color:var(--ink2);}
+.lab-i{width:100%;padding:9px 11px;font-size:.88rem;border:1.5px solid var(--border2);border-radius:var(--r-sm);background:var(--surf2);color:var(--ink);font-family:'Inter',sans-serif;-webkit-appearance:none;}
+.lab-i:focus{outline:none;border-color:var(--brand);box-shadow:0 0 0 3px rgba(21,101,192,.1);}
+.lab-hint{font-size:.64rem;color:var(--ink3);line-height:1.35;}
+.lab-sel{width:100%;padding:9px 11px;font-size:.84rem;border:1.5px solid var(--border2);border-radius:var(--r-sm);background:var(--surf2);color:var(--ink);font-family:'Inter',sans-serif;}
+.lab-btn{padding:11px;background:linear-gradient(135deg,#006064,#00897B);color:white;border:none;border-radius:var(--r-sm);font-size:.86rem;font-weight:700;cursor:pointer;width:100%;font-family:'Inter',sans-serif;margin-top:4px;}
+.lab-btn:hover{filter:brightness(1.08);}
+.sarco-card{border-radius:var(--r-sm);overflow:hidden;border:2px solid var(--border2);margin-top:4px;}
+.sarco-top{padding:14px 16px;color:white;}
+.sarco-n{background:linear-gradient(135deg,#1b5e20,#2e7d32);}
+.sarco-p{background:linear-gradient(135deg,#e65100,#bf360c);}
+.sarco-c{background:linear-gradient(135deg,#b71c1c,#7f0000);}
+.sarco-s{background:linear-gradient(135deg,#4a148c,#6a1b9a);}
+.sarco-lbl{font-size:.64rem;font-weight:800;letter-spacing:.09em;text-transform:uppercase;opacity:.88;}
+.sarco-val{font-size:1.1rem;font-weight:800;margin-top:4px;line-height:1.3;}
+.sarco-body{background:var(--surface);border-top:2px solid var(--border2);padding:12px 14px;font-size:.8rem;line-height:1.7;color:var(--ink);}
+.sarco-body strong{color:var(--ink);font-weight:700;}
+.lab-crit-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--border);font-size:.78rem;}
+.lab-crit-row:last-child{border-bottom:none;}
+.lab-crit-k{color:var(--ink2);}
+.lab-crit-v{font-weight:700;color:var(--ink);}
+.lab-saved{background:var(--sys-bg);border:1.5px solid var(--sys-bdr);border-radius:var(--r-sm);padding:10px 13px;font-size:.82rem;color:var(--ink);font-weight:600;margin-top:6px;display:none;}
+
+@media print{
+  body{background:white!important;overflow:visible!important;height:auto!important;}
+  .topbar,.prog,.nav,.modal-ov,.proj-ov,.views{display:none!important;}
+  #printReport{display:block!important;}
+  #printReport *{color:black!important;}
+}
+#printReport{display:none;font-family:'Inter',Arial,sans-serif;padding:20px;max-width:900px;margin:0 auto;}
+.pr-h1{font-size:1.5rem;font-weight:800;color:#0d47a1;border-bottom:3px solid #0d47a1;padding-bottom:8px;margin-bottom:16px;}
+.pr-h2{font-size:1rem;font-weight:700;color:#1565c0;margin:16px 0 8px;border-left:4px solid #1565c0;padding-left:10px;}
+.pr-table{width:100%;border-collapse:collapse;margin-bottom:14px;font-size:.82rem;}
+.pr-table th{background:#e3f2fd;padding:6px 10px;text-align:left;font-weight:700;border:1px solid #90caf9;}
+.pr-table td{padding:6px 10px;border:1px solid #ddd;vertical-align:top;}
+.pr-table tr:nth-child(even) td{background:#f5f8fa;}
+.pr-meta{font-size:.78rem;color:#607d8f;margin-bottom:20px;}
+.pr-footer{margin-top:24px;font-size:.7rem;color:#90a4ae;border-top:1px solid #ddd;padding-top:8px;}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="t-av">🩺</div>
+  <div>
+    <div class="t-name">ObesClin Pro</div>
+    <div class="t-sub" id="tSub">Evaluación · Registro · Investigación</div>
+  </div>
+  <div class="t-right">
+    <span class="t-badge" id="ptCount">0 pac.</span>
+  </div>
+</div>
+<div class="prog"><div class="prog-f" id="pf"></div></div>
+
+<div class="views">
+
+  <!-- ══ VIEW: EVALUACIÓN (CHAT) ══ -->
+  <div class="view on" id="vEval" style="flex-direction:column">
+    <div class="chat" id="chat"></div>
+    <div class="inp-area" id="inp"></div>
+  </div>
+
+  <!-- ══ VIEW: PACIENTES ══ -->
+  <div class="view" id="vPat" style="overflow-y:auto">
+    <div class="list-wrap">
+      <div class="list-hdr">
+        <div class="list-title">👥 Pacientes</div>
+        <div class="list-actions">
+          <button class="icon-btn" onclick="exportCSV()">⬇ CSV</button>
+          <button class="icon-btn" onclick="exportXLSX()">⬇ Excel</button>
+          <button class="icon-btn" onclick="exportPDF()">⬇ PDF</button>
+          <button class="icon-btn" onclick="resetEval();goView('vEval')">+ Nueva eval.</button>
+          <button class="icon-btn" onclick="archivarYReiniciar()" style="color:#b71c1c;border-color:#ef9a9a">⚠️ Reiniciar</button>
+        </div>
+      </div>
+      <div id="ptList"></div>
+    </div>
+  </div>
+
+  <!-- ══ VIEW: DETALLE PACIENTE ══ -->
+  <div class="view" id="vDet" style="overflow-y:auto">
+    <div class="det-hdr">
+      <div class="det-back" onclick="goView('vPat')">← Volver</div>
+      <div class="det-name" id="detName">—</div>
+      <div class="det-sub" id="detSub">—</div>
+    </div>
+    <div class="det-body" id="detBody"></div>
+  </div>
+
+  <!-- ══ VIEW: INVESTIGACIÓN ══ -->
+  <div class="view" id="vRes" style="overflow-y:auto">
+    <div class="res-wrap">
+      <div class="list-hdr">
+        <div class="list-title">📊 Investigación</div>
+        <div class="list-actions">
+          <button class="icon-btn" onclick="exportResearchCSV()">⬇ CSV invest.</button>
+        </div>
+      </div>
+      <div id="resBody"></div>
+    </div>
+  </div>
+
+
+  <!-- ══ VIEW: BIA · JAMAR ══ -->
+  <div class="view" id="vLab" style="overflow-y:auto">
+    <div style="background:var(--bot-bg);color:white;padding:13px 15px;flex-shrink:0">
+      <div style="font-size:1rem;font-weight:800">⚖️ BIA · Dinamómetro Jamar</div>
+      <div style="font-size:.68rem;opacity:.6;margin-top:3px">Diagnóstico de sarcopenia por aparatos · EWGSOP2 2019</div>
+    </div>
+    <div style="padding:14px 13px;display:flex;flex-direction:column;gap:12px" id="labBody">
+      <!-- rendered by JS -->
+    </div>
+  </div>
+
+</div>
+
+<!-- BOTTOM NAV -->
+<nav class="nav">
+  <button class="nav-btn on" id="nb-eval" onclick="goView('vEval')"><div class="ni">🩺</div><div class="nl">Evaluación</div></button>
+  <button class="nav-btn" id="nb-pat"  onclick="goView('vPat')"><div class="ni">👥</div><div class="nl">Pacientes</div></button>
+  <button class="nav-btn" id="nb-lab"  onclick="goView('vLab')"><div class="ni">⚖️</div><div class="nl">BIA · Jamar</div></button>
+  <button class="nav-btn" id="nb-res"  onclick="goView('vRes')"><div class="ni">📊</div><div class="nl">Investigación</div></button>
+</nav>
+
+<!-- SAVE MODAL -->
+<div class="modal-ov" id="saveModal" onclick="closeModal()">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-drag"></div>
+    <h3>💾 Guardar paciente</h3>
+    <div style="font-size:.71rem;font-weight:700;color:var(--ink2);margin-bottom:6px">Identificación del paciente</div>
+    <div class="m-row" style="grid-template-columns:80px 1fr 1fr">
+      <div class="m-field">
+        <div class="m-lbl">Nº orden</div>
+        <input class="m-inp" type="number" id="mOrden" placeholder="1" min="1" style="font-weight:800;font-size:1rem;text-align:center">
+        <div style="font-size:.62rem;color:var(--ink3);margin-top:2px">Interno piloto</div>
+      </div>
+      <div class="m-field">
+        <div class="m-lbl">Iniciales (nombre + 2 apellidos)</div>
+        <input class="m-inp" id="mName" placeholder="ej: J.G.M." maxlength="10" style="text-transform:uppercase;letter-spacing:.05em">
+        <div style="font-size:.62rem;color:var(--ink3);margin-top:2px">Inicial nombre · inicial 1er ap. · inicial 2º ap.</div>
+      </div>
+      <div class="m-field">
+        <div class="m-lbl">Nº historia (5 dígitos)</div>
+        <input class="m-inp" id="mId" placeholder="ej: 12345" maxlength="5" pattern="[0-9]{5}" inputmode="numeric">
+        <div style="font-size:.62rem;color:var(--ink3);margin-top:2px">Historia clínica interna</div>
+      </div>
+    </div>
+    <div class="m-row">
+      <div class="m-field"><div class="m-lbl">Edad (años)</div><input class="m-inp" type="number" id="mEdad" placeholder="58"></div>
+      <div class="m-field"><div class="m-lbl">Sexo</div><input class="m-inp" id="mSexo" readonly></div>
+    </div>
+    <div style="font-size:.74rem;font-weight:700;color:var(--ink2);margin:10px 0 6px">Patrón oro (para investigación — opcional)</div>
+    <div style="font-size:.72rem;color:var(--ink3);margin-bottom:8px">¿Confirma BIA/dinamometría sarcopenia?</div>
+    <div class="chips">
+      <div class="chip" id="gsY" onclick="setGS('si')">Sí — sarcopenia confirmada</div>
+      <div class="chip" id="gsN" onclick="setGS('no')">No — descartada</div>
+      <div class="chip" id="gsU" onclick="setGS('nd')" style="border-color:var(--border)">No disponible</div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-g" onclick="closeModal()">Cancelar</button>
+      <button class="btn btn-p" onclick="savePatient()">Guardar →</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════
+// INDEXEDDB
+// ═══════════════════════════════
+let DB;
+function initDB(){
+  return new Promise((res,rej)=>{
+    const req=indexedDB.open('ObesclinPro',1);
+    req.onupgradeneeded=e=>{
+      const db=e.target.result;
+      if(!db.objectStoreNames.contains('patients'))
+        db.createObjectStore('patients',{keyPath:'id'});
+    };
+    req.onsuccess=e=>{DB=e.target.result;res();};
+    req.onerror=()=>rej('DB error');
+  });
+}
+function dbAll(store){
+  return new Promise(res=>{
+    const tx=DB.transaction(store,'readonly');
+    const req=tx.objectStore(store).getAll();
+    req.onsuccess=()=>res(req.result||[]);
+    req.onerror=()=>res([]);
+  });
+}
+function dbPut(store,obj){
+  return new Promise(res=>{
+    const tx=DB.transaction(store,'readwrite');
+    const req=tx.objectStore(store).put(obj);
+    req.onsuccess=()=>res(req.result);
+    req.onerror=()=>res(null);
+  });
+}
+function dbGet(store,key){
+  return new Promise(res=>{
+    const tx=DB.transaction(store,'readonly');
+    const req=tx.objectStore(store).get(key);
+    req.onsuccess=()=>res(req.result||null);
+    req.onerror=()=>res(null);
+  });
+}
+function dbDelete(store,key){
+  return new Promise(res=>{
+    const tx=DB.transaction(store,'readwrite');
+    const req=tx.objectStore(store).delete(key);
+    req.onsuccess=()=>res(true);
+    req.onerror=()=>res(false);
+  });
+}
+function dbClearAll(store){
+  return new Promise(res=>{
+    const tx=DB.transaction(store,'readwrite');
+    const req=tx.objectStore(store).clear();
+    req.onsuccess=()=>res(true);
+    req.onerror=()=>res(false);
+  });
+}
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7);}
+
+// ═══════════════════════════════
+// NAV / VIEWS
+// ═══════════════════════════════
+function showView(id){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('on'));
+  document.getElementById(id).classList.add('on');
+  // Keep nav bar in sync
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('on'));
+  const map={vEval:'nb-eval',vPat:'nb-pat',vLab:'nb-lab',vRes:'nb-res'};
+  if(map[id]) document.getElementById(map[id]).classList.add('on');
+}
+function goView(id){
+  showView(id);
+  if(id==='vPat') renderPatients();
+  if(id==='vRes') renderResearch();
+  if(id==='vLab') initLab();
+  if(id==='vEval'){
+    // If chat is empty (after reset or first load), restart evaluation
+    if(!document.getElementById('chat').children.length) s1();
+  }
+}
+
+// ═══════════════════════════════
+// EVAL STATE
+// ═══════════════════════════════
+const G={
+  sexo:'',edad:null,peso:null,altura:null,imc:null,pesoIdeal:null,pesoAj:null,
+  enf:new Set(),farm:new Set(),
+  cintura:null,cadera:null,gemelar:null,gemelarBajo:false,rca:null,whr:null,
+  lbm:null,fbm:null,fatPct:null,
+  aGluc:null,aHba1c:null,aCreat:null,aTsh:null,
+  aAlt:null,aLdl:null,aTg:null,aUrico:null,aVitD:null,
+  score2Pct:null,score2Cat:'',ldlObj:'',s2tto:'',
+  sarcf:{s:null,a:null,r:null,c:null,f:null},sarcfScore:null,
+  sts:null,vel:null,gemAnormal:false,sarcopeniaBits:new Set(),
+  fovea:'no',stemmer:'neg',edistrib:'bil',signosE:'ninguno',
+  fenotipo:'',lipedema:false,
+  diagStr:'',diagFull:'',sarcoSuspected:false
+};
+
+let gsValue='nd';
+
+// ═══════════════════════════════
+// CHAT HELPERS
+// ═══════════════════════════════
+const chat=document.getElementById('chat');
+const inp=document.getElementById('inp');
+function scroll(){setTimeout(()=>chat.scrollTo({top:chat.scrollHeight,behavior:'smooth'}),60);}
+function clr(){inp.innerHTML='';}
+function stat(t){document.getElementById('tSub').textContent=t;}
+function prog(n){document.getElementById('pf').style.width=Math.round(n/11*100)+'%';}
+function tag(t,c){return '<span class="tag t-'+c+'">'+t+'</span>';}
+function nv(id){const v=parseFloat(document.getElementById(id)?.value);return isNaN(v)?null:v;}
+function imcL(v){
+  if(v<18.5)return{l:'Bajo peso',c:'err'};if(v<25)return{l:'Normal',c:'ok'};
+  if(v<30)return{l:'Sobrepeso',c:'warn'};if(v<35)return{l:'Obesidad I',c:'warn'};
+  if(v<40)return{l:'Obesidad II',c:'err'};return{l:'Obesidad III',c:'err'};
+}
+
+function addBubble(html,type,delay){
+  type=type||'bot'; delay=delay||0;
+  return new Promise(function(res){
+    setTimeout(function(){
+      if(type==='bot'){
+        const row=document.createElement('div');
+        row.className='br bot';
+        row.innerHTML='<div class="av">🩺</div><div class="bbl bot"><div class="typing"><span></span><span></span><span></span></div></div>';
+        chat.appendChild(row);scroll();
+        setTimeout(function(){row.querySelector('.bbl').innerHTML=html;scroll();res();},550);
+      } else {
+        const row=document.createElement('div');
+        row.className='br '+(type==='user'?'user':'sys');
+        row.innerHTML='<div class="bbl '+type+'">'+html+'</div>';
+        chat.appendChild(row);scroll();res();
+      }
+    },delay);
+  });
+}
+
+function showChips(opts,cb,presel){
+  clr();presel=presel||'';
+  const w=document.createElement('div');w.className='chips';
+  opts.forEach(function(o){
+    const c=document.createElement('div');
+    c.className='chip'+(presel===o.val?' sel':'');
+    c.textContent=o.label;
+    c.onclick=function(){cb(o.val,o.label);};
+    w.appendChild(c);
+  });
+  inp.appendChild(w);
+}
+
+function showNums(fields,cb){
+  clr();
+  fields.forEach(function(f){
+    const w=document.createElement('div');w.className='n-row';
+    const l=document.createElement('div');l.className='n-lbl';l.textContent=f.label;
+    const i=document.createElement('input');i.type='number';i.id=f.id;
+    i.className='n-inp';i.placeholder=f.ph||'';i.step=f.step||'any';
+    i.addEventListener('keydown',function(e){if(e.key==='Enter')cb();});
+    w.appendChild(l);w.appendChild(i);
+    if(f.hint){const h=document.createElement('div');h.className='n-hint';h.textContent=f.hint;w.appendChild(h);}
+    inp.appendChild(w);
+  });
+  const b=document.createElement('button');b.className='cbtn';b.textContent='Confirmar →';b.onclick=cb;
+  inp.appendChild(b);
+  setTimeout(function(){document.getElementById(fields[0].id)&&document.getElementById(fields[0].id).focus();},120);
+}
+
+function showMulti(opts,key,cb){
+  clr();
+  const g=document.createElement('div');g.className='chk-grid';
+  opts.forEach(function(o){
+    const c=document.createElement('div');c.className='chk-item';
+    c.innerHTML='<div class="chk-dot"></div>'+o.label;
+    c.onclick=function(){
+      c.classList.toggle('on');
+      const dot=c.querySelector('.chk-dot');
+      if(c.classList.contains('on')){G[key].add(o.id);dot.textContent='✓';}
+      else{G[key].delete(o.id);dot.textContent='';}
+    };
+    g.appendChild(c);
+  });
+  const b=document.createElement('button');b.className='cbtn';b.textContent='Confirmar →';b.onclick=cb;
+  inp.appendChild(g);inp.appendChild(b);
+}
+
+function showSarcf(cb){
+  clr();
+  const qs=[
+    {q:'s',label:'S — Fuerza: ¿Dificultad para levantar ~4,5 kg?'},
+    {q:'a',label:'A — Ayuda: ¿Dificultad para cruzar la habitación?'},
+    {q:'r',label:'R — Levantarse de la silla sin usar los brazos'},
+    {q:'c',label:'C — Escaleras: ¿Dificultad para subir 10 escalones?'},
+    {q:'f',label:'F — Caídas en el último año'}
+  ];
+  const def=[['Ninguna (0)','0'],['Alguna (1)','1'],['Mucha/incapaz (2)','2']];
+  const fOp=[['Ninguna (0)','0'],['1–3 (1)','1'],['≥4 (2)','2']];
+  const g=document.createElement('div');g.className='sf-grid';
+  qs.forEach(function(item){
+    const row=document.createElement('div');row.className='sf-row';
+    const q=document.createElement('div');q.className='sf-q';q.textContent=item.label;
+    const od=document.createElement('div');od.className='sf-opts';
+    (item.q==='f'?fOp:def).forEach(function(op){
+      const o=document.createElement('div');o.className='sf-opt';o.textContent=op[0];
+      o.onclick=function(){od.querySelectorAll('.sf-opt').forEach(function(x){x.classList.remove('sel');});o.classList.add('sel');G.sarcf[item.q]=parseInt(op[1]);};
+      od.appendChild(o);
+    });
+    row.appendChild(q);row.appendChild(od);g.appendChild(row);
+  });
+  const b=document.createElement('button');b.className='cbtn';b.textContent='Calcular SARC-F →';
+  b.onclick=function(){
+    if(['s','a','r','c','f'].some(function(q){return G.sarcf[q]===null;})){addBubble('Responde todos los ítems.','warn');return;}
+    cb();
+  };
+  inp.appendChild(g);inp.appendChild(b);
+}
+
+// ═══════════════════════════════
+// CHAT FLOW
+// ═══════════════════════════════
+async function s1(){
+  prog(1);stat('Paso 1 · Datos del paciente');
+  await addBubble('Hola. Soy <strong>ObesClin Pro</strong>.<br>Completa la evaluación, guarda al paciente y sigue su evolución en el tiempo.<br><br>¿Sexo biológico del paciente?');
+  showChips([{label:'♂ Hombre',val:'H'},{label:'♀ Mujer',val:'M'}],async function(v,l){
+    G.sexo=v;await addBubble(l,'user');s2();
+  });
+}
+
+async function s2(){
+  await addBubble('¿<strong>Edad</strong>, <strong>peso</strong> y <strong>altura</strong>?','bot',300);
+  showNums([
+    {id:'edad',label:'Edad (años)',ph:'ej: 58',step:'1'},
+    {id:'peso',label:'Peso (kg)',ph:'ej: 94.0',step:'0.1'},
+    {id:'altura',label:'Altura (cm)',ph:'ej: 167',step:'0.5'}
+  ],async function(){
+    const edad=nv('edad'),peso=nv('peso'),alt=nv('altura');
+    if(!peso||!alt){await addBubble('Peso y altura son necesarios.','warn');return;}
+    G.edad=edad;G.peso=peso;G.altura=alt;
+    const imc=peso/Math.pow(alt/100,2);G.imc=imc;
+    const hIn=alt/2.54;
+    G.pesoIdeal=Math.max(Math.round((G.sexo==='H'?50+2.3*(hIn-60):45.5+2.3*(hIn-60))*10)/10,35);
+    G.pesoAj=imc>=30&&peso>G.pesoIdeal?Math.round((G.pesoIdeal+0.4*(peso-G.pesoIdeal))*10)/10:peso;
+    const cl=imcL(imc);
+    await addBubble((G.sexo==='H'?'♂':'♀')+(edad?' '+edad+' años ·':'')+' '+peso+' kg · '+alt+' cm','user');
+    await addBubble(tag('IMC '+imc.toFixed(1)+' kg/m²',cl.c)+' '+tag(cl.l,cl.c)+(imc>=30?'<br>Peso ideal: <strong>'+G.pesoIdeal+' kg</strong> · Ajustado Hamwi: <strong>'+G.pesoAj+' kg</strong>':''),'sys');
+    s3a();
+  });
+}
+
+async function s3a(){
+  prog(2);stat('Paso 2 · Antecedentes');
+  await addBubble('¿Qué <strong>enfermedades</strong> tiene?','bot',400);
+  showMulti([
+    {id:'dm2',label:'DM2/prediabetes'},{id:'hta',label:'HTA'},
+    {id:'dislip',label:'Dislipemia'},{id:'hipotir',label:'Hipotiroidismo'},
+    {id:'saos',label:'SAOS'},{id:'ecv',label:'ECV establecida'},
+    {id:'icc',label:'Insuf. cardíaca'},{id:'erc',label:'Enf. renal crónica'},
+    {id:'mafld',label:'Hígado graso'},{id:'artros',label:'Artrosis'},
+    {id:'depres',label:'Depresión/ansiedad'},{id:'hiper',label:'Hiperuricemia'}
+  ],'enf',async function(){
+    await addBubble([...G.enf].length?[...G.enf].join(', '):'Ninguna','user');s3b();
+  });
+}
+async function s3b(){
+  await addBubble('¿Qué <strong>fármacos</strong> toma?','bot',300);
+  showMulti([
+    {id:'metformina',label:'Metformina'},{id:'isglt2',label:'iSGLT2'},
+    {id:'glp1',label:'GLP-1 RA'},{id:'insulina',label:'Insulina'},
+    {id:'ieca',label:'IECA/ARA-II'},{id:'calcioant',label:'Calcioantagonistas'},
+    {id:'estatinas',label:'Estatinas'},{id:'aine',label:'AINE'},
+    {id:'corticoides',label:'Corticoides'},{id:'pregabalina',label:'Pregabalina'},
+    {id:'antidep',label:'Antidepresivos'},{id:'aco',label:'ACO/THS'}
+  ],'farm',async function(){
+    const fe=['calcioant','aine','corticoides','insulina','pregabalina','aco'].filter(function(f){return G.farm.has(f);});
+    await addBubble([...G.farm].length?[...G.farm].join(', '):'Ninguno','user');
+    if(fe.length)await addBubble('⚠️ <strong>Fármacos que pueden agravar edema:</strong> '+fe.join(', '),'warn');
+    s4();
+  });
+}
+
+async function s4(){
+  prog(3);stat('Paso 3 · Antropometría');
+  await addBubble('<strong>Medidas</strong>. Cintura imprescindible; cadera y gemelar opcionales.','bot',400);
+  showNums([
+    {id:'cintura',label:'Cintura (cm)',ph:'media costilla-cresta',step:'0.5'},
+    {id:'cadera',label:'Cadera (cm) opc.',ph:'trocánteres',step:'0.5'},
+    {id:'gemelar',label:'Gemelar (cm) opc.',ph:'parte más ancha pantorrilla',step:'0.5',hint:'EWGSOP2: <31 cm → posible baja masa muscular'}
+  ],async function(){
+    const cin=nv('cintura');
+    if(!cin){await addBubble('La cintura es necesaria para calcular RCA.','warn');return;}
+    G.cintura=cin;
+    const cad=nv('cadera'),gem=nv('gemelar');
+    G.cadera=cad>0?cad:null;G.gemelar=gem>0?gem:null;
+    G.rca=cin/G.altura;
+    const eM=G.sexo==='H';
+    G.lbm=Math.max(eM?(9270*G.peso)/(6680+216*G.imc):(9270*G.peso)/(8780+244*G.imc),15);
+    G.fbm=G.peso-G.lbm;G.fatPct=(G.fbm/G.peso)*100;
+    G.gemelarBajo=G.gemelar!==null&&G.gemelar<31;
+    if(G.gemelarBajo)G.sarcopeniaBits.add('gemelar');
+    if(G.cadera)G.whr=cin/G.cadera;
+    const rcaP=G.rca>=0.5,umbOMS=eM?102:88,umbIDF=eM?94:80;
+    let fatCls='ok';
+    if(eM){if(G.fatPct>=25)fatCls='warn';if(G.fatPct>=30)fatCls='err';}
+    else{if(G.fatPct>=33)fatCls='warn';if(G.fatPct>=40)fatCls='err';}
+    await addBubble('Cintura '+cin+' cm'+(G.cadera?' · Cadera '+G.cadera:'')+(G.gemelar?' · Gemelar '+G.gemelar:''),'user');
+    let res='<strong>RCA:</strong> '+G.rca.toFixed(3)+' '+(rcaP?tag('≥0,5 Patológico','err'):tag('<0,5 Normal','ok'));
+    if(cin>umbOMS)res+=' '+tag('Cintura OMS >'+umbOMS,'err');
+    else if(cin>=umbIDF)res+=' '+tag('Cintura IDF ≥'+umbIDF,'warn');
+    if(G.whr)res+=' · WHR '+G.whr.toFixed(2)+' '+tag(G.whr>(eM?0.9:0.85)?'Androide':'Ginoide','info');
+    if(G.gemelar)res+='<br>Gemelar '+G.gemelar+' cm '+(G.gemelarBajo?tag('<31 EWGSOP2','err'):tag('Normal','ok'));
+    res+='<br><strong>Masa magra (Janmahasatian):</strong> <strong>'+G.lbm.toFixed(1)+' kg</strong> · Grasa: <strong>'+G.fbm.toFixed(1)+' kg</strong> '+tag(G.fatPct.toFixed(1)+'%',fatCls);
+    await addBubble(res,'sys');s5();
+  });
+}
+
+async function s5(){
+  prog(4);stat('Paso 4 · SCORE2 / SCORE2-OP');
+  const edad=G.edad;
+  if(!edad||edad<40){await addBubble('SCORE2 aplica desde los 40 años.','bot',400);s6();return;}
+  if(edad>89){
+    await addBubble('Con ≥90 años el riesgo CV es <strong>muy alto</strong> de forma directa. Valoración individualizada con Cardiología/Geriatría.','bot',400);
+    G.score2Cat='Muy alto';G.ldlObj='<55 mg/dL';G.s2tto='Estatina según tolerancia y comorbilidad. Valorar con especialista.';s6();return;
+  }
+  if(G.enf.has('ecv')||G.enf.has('icc')){
+    G.score2Cat='Muy alto';G.ldlObj='<55 mg/dL';G.s2tto='Estatina alta intensidad + ezetimiba.';
+    await addBubble('ECV/ICC: riesgo <strong>muy alto</strong> directo. Objetivo LDL &lt;55 mg/dL.','bot',400);s6();return;
+  }
+  const isOP=edad>=70;
+  window._s2isOP=isOP;
+  await addBubble(isOP
+    ? '<strong>SCORE2-OP</strong> (Older Persons, ESC 2021 — España). Paciente ≥70 años. DM2 ya registrada en antecedentes y se incluye automáticamente.'
+    : '<strong>SCORE2</strong> (ESC 2021 — España). Introduce los valores:','bot',400);
+  s5_inputs(isOP);
+}
+
+function s5_inputs(isOP){
+  showNums([
+    {id:'s2tas',label:'TAS sistólica (mmHg)',ph:isOP?'150':'138'},
+    {id:'s2ct',label:'Colesterol total (mg/dL)',ph:'215'},
+    {id:'s2hdl',label:'HDL (mg/dL)',ph:'46'},
+    {id:'s2ldl',label:'LDL (mg/dL) — opc.',ph:'138',hint:'Se usa en analítica y no se pide de nuevo.'},
+    {id:'s2tg',label:'TG (mg/dL) — opc.',ph:'195'}
+  ],function(){
+    const tas=nv('s2tas'),ct=nv('s2ct'),hdl=nv('s2hdl');
+    if(!tas||!ct||!hdl){
+      addBubble('TAS, colesterol total y HDL son necesarios.','warn').then(function(){s5_inputs(isOP);});
+      return;
+    }
+    G.aLdl=nv('s2ldl')||G.aLdl;
+    G.aTg=nv('s2tg')||G.aTg;
+    window._s2tas=tas;window._s2ct=ct;window._s2hdl=hdl;
+    addBubble('TAS '+tas+' · CT '+ct+' · HDL '+hdl+(G.aLdl?' · LDL '+G.aLdl:'')+(G.aTg?' · TG '+G.aTg:''),'user').then(function(){
+      s5_tabaco(isOP);
+    });
+  });
+}
+
+function s5_tabaco(isOP){
+  addBubble('¿El paciente es fumador activo?','bot',200).then(function(){
+    showChips([{label:'No fumador',val:'0'},{label:'Fumador activo',val:'1'}],function(fuma,fl){
+      addBubble(fl,'user').then(function(){s5_calc(fuma,isOP);});
+    });
+  });
+}
+
+async function s5_calc(fuma,isOP){
+  const edad=G.edad;
+  const tas=window._s2tas,ct=window._s2ct,hdl=window._s2hdl;
+  const fi=parseInt(fuma);
+  let lp,s0,r,cat,bg,ldlObj,tto,modelo;
+
+  if(!isOP){
+    // SCORE2 (40-69) — region bajo riesgo (Espana) ESC 2021
+    modelo='SCORE2';
+    const nonHDL=(ct-hdl)/38.67,ageC=edad-60,sbpC=(tas-120)/20,nHC=nonHDL-3.31;
+    if(G.sexo==='H'){lp=0.3742*ageC+0.6012*fi+0.2777*sbpC+0.1458*nHC-0.0755*ageC*sbpC-0.0255*ageC*fi;s0=0.9605;}
+    else{lp=0.4648*ageC+0.7744*fi+0.3131*sbpC+0.1002*nHC-0.1088*ageC*sbpC-0.0230*ageC*fi;s0=0.9776;}
+    r=Math.min(Math.max((1-Math.pow(s0,Math.exp(lp)))*100,0.1),47);
+    G.score2Pct=Math.round(r*10)/10;
+    if(edad<50){
+      if(r<2.5){cat='Bajo-moderado';bg='#1b5e20';ldlObj='<116 mg/dL';tto='Modificacion estilo de vida.';}
+      else if(r<7.5){cat='Alto';bg='#e65100';ldlObj='<100 mg/dL';tto='Estatina moderada intensidad.';}
+      else{cat='Muy alto';bg='#b71c1c';ldlObj='<55 mg/dL';tto='Estatina alta intensidad mas ezetimiba.';}
+    } else {
+      if(r<5){cat='Bajo-moderado';bg='#1b5e20';ldlObj='<116 mg/dL';tto='Modificacion estilo de vida.';}
+      else if(r<10){cat='Alto';bg='#e65100';ldlObj='<100 mg/dL';tto='Estatina moderada intensidad.';}
+      else{cat='Muy alto';bg='#b71c1c';ldlObj='<55 mg/dL';tto='Estatina alta intensidad mas ezetimiba mas PCSK9i.';}
+    }
+  } else {
+    // SCORE2-OP (70-89) — region bajo riesgo (Espana) EHJ 2021
+    // Cruz-Jentoft et al. — Supplementary Table S3
+    // Centering: edad=73, TAS=145.7 (escala /20 mmHg), no-HDL=4.72 mmol/L
+    modelo='SCORE2-OP';
+    const nonHDL=(ct-hdl)/38.67;
+    const ageC=edad-73;
+    const sbpC=(tas-145.7)/20;
+    const nHC=nonHDL-4.72;
+    const dm2=G.enf.has('dm2')?1:0;
+    if(G.sexo==='H'){
+      lp=0.5390*ageC+0.4938*fi+0.1900*sbpC+0.0657*nHC+0.4659*dm2+(-0.0537)*ageC*fi+(-0.0088)*ageC*sbpC;
+      s0=0.7576;
+    } else {
+      lp=0.5745*ageC+0.5073*fi+0.2165*sbpC+0.0581*nHC+0.5152*dm2+(-0.0790)*ageC*fi+(-0.0093)*ageC*sbpC;
+      s0=0.8082;
+    }
+    r=Math.min(Math.max((1-Math.pow(s0,Math.exp(lp)))*100,0.1),95);
+    G.score2Pct=Math.round(r*10)/10;
+    // Categorias ESC 2021 para SCORE2-OP (>70 anos sin DM2)
+    if(r<7.5){cat='Bajo-moderado';bg='#1b5e20';ldlObj='<116 mg/dL';tto='Valorar estilo de vida. Estatina si otros factores de riesgo.';}
+    else if(r<15){cat='Alto';bg='#e65100';ldlObj='<70 mg/dL';tto='Estatina moderada-alta intensidad mas ezetimiba (IIa). Valorar beneficio/riesgo en >80 anos y polifarmacia.';}
+    else{cat='Muy alto';bg='#b71c1c';ldlObj='<55 mg/dL';tto='Estatina alta intensidad mas ezetimiba (I). Precaucion: efectos musculares e interacciones en polifarmacia.';}
+    if(dm2) cat+=' + DM2';
+  }
+
+  G.score2Cat=cat;G.ldlObj=ldlObj;G.s2tto=tto;
+  const nota='<br><span style="font-size:.7rem;opacity:.85">'+modelo+(isOP?' · DM2 '+(G.enf.has('dm2')?'incluida':'sin DM2')+' · centrado edad 73/TAS 145.7':'')+'  · Region bajo riesgo (Espana) · ESC/EHJ 2021</span>';
+  await addBubble('<div style="background:'+bg+';color:#fff;padding:11px 14px;border-radius:10px"><strong style="color:#fff;font-size:1.3rem;font-family:monospace">'+G.score2Pct+'%</strong> <span style="opacity:.9">'+cat+' riesgo CV ('+modelo+' 10 anos)</span>'+nota+'</div><div style="padding:8px 2px;font-size:.8rem;color:var(--ink)"><strong>Obj. LDL:</strong> '+ldlObj+' </div><div style="padding:0 2px 6px;font-size:.78rem;color:var(--ink)">'+tto+'</div>','sys');
+  s6();
+}
+
+async function s6(){
+  prog(5);stat('Paso 5 · Analítica');
+  // Build message noting what was already collected
+  let analMsg = 'Valores analíticos disponibles. Los vacíos se omiten.';
+  const yaLipidos = [];
+  if(G.aLdl) yaLipidos.push('LDL '+G.aLdl+' mg/dL');
+  if(G.aTg)  yaLipidos.push('TG '+G.aTg+' mg/dL');
+  if(yaLipidos.length) analMsg += '<br><span style="font-size:.76rem;color:var(--ink3)">Lípidos ya recogidos en SCORE2: '+yaLipidos.join(' · ')+' — no se vuelven a pedir.</span>';
+  await addBubble(analMsg,'bot',400);
+  // Build fields array: only include LDL/TG if not already set
+  const analFields = [
+    {id:'aGluc',label:'Glucosa basal (mg/dL)',ph:'118'},
+    {id:'aHba1c',label:'HbA1c (%)',ph:'6.2',step:'0.1'},
+    {id:'aCreat',label:'Creatinina (mg/dL)',ph:'0.92',step:'0.01'},
+    {id:'aTsh',label:'TSH (mUI/L)',ph:'3.2',step:'0.01'},
+    {id:'aAlt',label:'ALT (UI/L)',ph:'52'},
+  ];
+  if(!G.aLdl) analFields.push({id:'aLdl2',label:'LDL colesterol (mg/dL)',ph:'138',hint:'Si no se recogió en SCORE2'});
+  if(!G.aTg)  analFields.push({id:'aTg2',label:'Triglicéridos (mg/dL)',ph:'195',hint:'Si no se recogió en SCORE2'});
+  analFields.push({id:'aUrico',label:'Ác. úrico (mg/dL)',ph:'7.8',step:'0.1'});
+  analFields.push({id:'aVitD',label:'Vit D 25-OH (ng/mL)',ph:'18',step:'0.1'});
+  showNums(analFields,async function(){
+    G.aGluc=nv('aGluc');G.aHba1c=nv('aHba1c');G.aCreat=nv('aCreat');G.aTsh=nv('aTsh');
+    G.aAlt=nv('aAlt');
+    const ldl2=nv('aLdl2'),tg2=nv('aTg2');
+    if(ldl2)G.aLdl=ldl2;if(tg2)G.aTg=tg2;
+    G.aUrico=nv('aUrico');G.aVitD=nv('aVitD');
+    const als=[];
+    const chk=function(c,m,sev){if(c)als.push({m:m,sev:sev||'warn'});};
+    chk(G.aGluc>=126,'Glucosa ≥126 mg/dL → criterio DM2','err');
+    chk(G.aGluc>=100&&G.aGluc<126,'Glucosa 100–125 → prediabetes');
+    chk(G.aHba1c>=6.5,'HbA1c ≥6,5% → criterio DM2','err');
+    chk(G.aHba1c>=5.7&&G.aHba1c<6.5,'HbA1c 5,7–6,4% → prediabetes');
+    if(G.aCreat&&G.edad&&G.peso){
+      const fge=Math.round((140-G.edad)*G.peso/(72*G.aCreat)*(G.sexo==='M'?0.85:1));
+      chk(fge<30,'FGE estimado <30 mL/min → IRC grave — derivar Nefrología','err');
+      chk(fge>=30&&fge<60,'FGE '+fge+' mL/min → IRC moderada');
+    }
+    chk(G.aTsh>10,'TSH >10 → hipotiroidismo severo','err');
+    chk(G.aTsh>4.5&&G.aTsh<=10,'TSH >4,5 → hipotiroidismo — valorar Tx');
+    chk(G.aAlt>40,'ALT >40 → valorar MAFLD');
+    chk(G.aLdl>=130,'LDL ≥130 → revisar hipolipemiante');
+    chk(G.aTg>=150,'TG ≥150 → dislipemia aterogénica');
+    chk((G.sexo==='H'?G.aUrico>=7:G.aUrico>=6)&&G.aUrico,'Ác. úrico elevado → hiperuricemia/IR');
+    chk(G.aVitD<12&&G.aVitD,'Vit D <12 → deficiencia grave','err');
+    chk(G.aVitD>=12&&G.aVitD<20,'Vit D <20 → deficiencia');
+    const vals=[];
+    if(G.aGluc)vals.push('Glu '+G.aGluc);if(G.aHba1c)vals.push('HbA1c '+G.aHba1c+'%');
+    if(G.aCreat)vals.push('Cr '+G.aCreat);if(G.aTsh)vals.push('TSH '+G.aTsh);
+    if(G.aAlt)vals.push('ALT '+G.aAlt);if(G.aLdl)vals.push('LDL '+G.aLdl+'(lípidos)');
+    if(G.aTg)vals.push('TG '+G.aTg+'(lípidos)');if(G.aUrico)vals.push('Úrico '+G.aUrico);
+    if(G.aVitD)vals.push('VitD '+G.aVitD);
+    await addBubble(vals.length?vals.join(' · '):'Sin valores introducidos','user');
+    if(als.length){for(var i=0;i<als.length;i++)await addBubble(als[i].m,als[i].sev,150);}
+    else if(vals.length)await addBubble('✅ Sin hallazgos de alarma en los valores introducidos.','sys');
+    s7();
+  });
+}
+
+async function s7(){
+  prog(6);stat('Paso 6 · SARC-F');
+  await addBubble('<strong>SARC-F</strong> (Malmstrom 2013) · ≥4/10 = sarcopenia probable','bot',400);
+  showSarcf(async function(){
+    G.sarcfScore=['s','a','r','c','f'].reduce(function(s,q){return s+G.sarcf[q];},0);
+    const pos=G.sarcfScore>=4;
+    if(pos)G.sarcopeniaBits.add('SARC-F');
+    await addBubble('SARC-F: '+G.sarcfScore+'/10','user');
+    await addBubble('<strong>SARC-F: '+G.sarcfScore+'/10</strong> '+(pos?tag('≥4 — Sarcopenia probable','err'):tag('<4 — Bajo riesgo','ok')),'sys');
+    s8();
+  });
+}
+
+async function s8(){
+  prog(7);stat('Paso 7 · Función muscular');
+  await addBubble('<strong>5-STS</strong>: el paciente se levanta y sienta 5 veces sin usar los brazos. ¿Cuántos segundos? (vacío si incapaz)<br><small>Criterio primario EWGSOP2 · Normal &lt;12 s · Criterio preferente a TUG en obesidad (no confunde fuerza con equilibrio)</small>','bot',400);
+  showNums([{id:'sts',label:'5-STS (segundos)',ph:'ej: 14.2',step:'0.1'}],async function(){
+    const sts=nv('sts');G.sts=sts;
+    const stsAlt=(sts===null)||sts>=12;
+    if(stsAlt)G.sarcopeniaBits.add('5-STS');
+    await addBubble(sts!==null?'5-STS: '+sts+' s':'5-STS: incapaz','user');
+    await addBubble('<strong>5-STS:</strong> '+(sts!==null?sts+' s ':'')+(stsAlt?tag('≥12 s — Alterado','err'):tag('<12 s — Normal','ok')),'sys');
+    // Add gait speed (clinical, quick, no equipment)
+    await addBubble('¿Velocidad de marcha? (prueba 4 metros — opcional)<br><small>Cronometra el tiempo en recorrer 4 m a paso cómodo. Deja vacío si no se realiza.</small>','bot',300);
+    showNums([{id:'vel4m',label:'Tiempo en 4 m (segundos)',ph:'ej: 5.2 — vacío si no se hace',step:'0.1'}],async function(){
+      const t4m=nv('vel4m');
+      G.vel = t4m ? Math.round(4/t4m*100)/100 : null;
+      if(G.vel){
+        await addBubble('Tiempo 4 m: '+t4m+' s → Velocidad: '+G.vel+' m/s','user');
+        await addBubble('<strong>Velocidad marcha:</strong> '+G.vel+' m/s '+(G.vel<=0.8?tag('≤0,8 m/s — Bajo rendimiento','err'):tag('Normal','ok')),'sys');
+      } else {
+        await addBubble('Velocidad de marcha no registrada','user');
+      }
+      await addBubble('<strong>Palpación del gemelar</strong>: palpa la parte más ancha de la pantorrilla con los dedos. ¿Cómo es la consistencia muscular?','bot',300);
+      showChips([{label:'Firme / elástico — normal',val:'normal'},{label:'Flácido / se hunde al presionar',val:'anormal'}],async function(v,l){
+        G.gemAnormal=v==='anormal';
+        if(G.gemAnormal)G.sarcopeniaBits.add('gemelo');
+        await addBubble(l,'user');
+        const sarco=G.sarcopeniaBits.size>0;
+        await addBubble(sarco?'🔴 <strong>Sospecha sarcopenia.</strong> Criterios: <strong>'+[...G.sarcopeniaBits].join(', ')+'</strong>':'🟢 <strong>Sin criterios de sarcopenia funcional.</strong>','sys');
+        s9();
+      });
+    });
+  });
+}
+
+async function s9(){
+  prog(8);stat('Paso 8 · Edema');
+  await addBubble('<strong>Fóvea</strong>: presión 10–15 s sobre tibia o sacro.','bot',400);
+  showChips([{label:'Sin fóvea',val:'no'},{label:'Fóvea < 30 s',val:'leve'},{label:'Fóvea > 1 min',val:'signif'}],async function(v,l){
+    G.fovea=v;await addBubble(l,'user');
+    await addBubble('<strong>Stemmer</strong>: pellizco dorso base 2º dedo del pie.','bot',300);
+    showChips([{label:'Negativo — pellizable',val:'neg'},{label:'Positivo — no pellizable',val:'pos'},{label:'Dudoso',val:'dud'}],async function(sv,sl){
+      G.stemmer=sv;await addBubble(sl,'user');
+      if(sv==='pos')await addBubble('Stemmer positivo → alta especificidad linfedema. Lipedema: Stemmer habitualmente negativo.','warn');
+      // Si no hay fóvea ni Stemmer positivo → sin edema clínico, saltar distribución
+      if(G.fovea==='no'&&sv==='neg'){
+        G.edistrib='ninguno';G.signosE='ninguno';
+        await addBubble(tag('Sin edema clínico','ok')+' — fóvea negativa · Stemmer negativo','sys');
+        s10();return;
+      }
+      await addBubble('¿Distribución del edema?','bot',300);
+      showChips([
+        {label:'Bilateral simétrico',val:'bil'},{label:'Unilateral',val:'uni'},{label:'Localizado',val:'loc'}
+      ],async function(dv,dl){
+        G.edistrib=dv;await addBubble(dl,'user');
+        showChips([
+          {label:'Sin signos adicionales',val:'ninguno'},{label:'Disnea / ortopnea',val:'disnea'},
+          {label:'Proteinuria / creatinina ↑',val:'proteinuria'},{label:'Dolor + rubor + calor unilateral',val:'asimetria'},
+          {label:'Hiperpigmentación + induración',val:'venoso'},{label:'Piel brillante + peso ↑ rápido',val:'piel'}
+        ],async function(sigv,sigl){
+          G.signosE=sigv;await addBubble(sigl,'user');
+          const fMap={no:'Sin fóvea',leve:'Fóvea leve',signif:'Fóvea significativa'};
+          const fCls={no:'ok',leve:'warn',signif:'err'};
+          const stCls={neg:'ok',pos:'err',dud:'warn'};
+          const stLbl={neg:'Stemmer −',pos:'STEMMER +',dud:'Stemmer ?'};
+          let res=tag(fMap[G.fovea],fCls[G.fovea])+' '+tag(stLbl[G.stemmer],stCls[G.stemmer]);
+          if(sigv==='asimetria')res+='<br>🚨 <strong>Sospecha TVP — derivar urgente.</strong>';
+          await addBubble(res,'sys');
+          s10();
+        });
+      });
+    });
+  });
+}
+
+async function s10(){
+  prog(9);stat('Paso 9 · Fenotipo');
+  const auto=computeFen();
+  await addBubble('¿Fenotipo clínico predominante?'+(auto?'<br><small>(auto-sugerido: <em>'+auto+'</em>)</small>':''),'bot',400);
+  showChips([
+    {label:'Androide',val:'androide'},{label:'Ginoide',val:'ginoide'},
+    {label:'Sarcopénico',val:'sarcopenico'},{label:'Edematoso',val:'edematoso'},{label:'Mixto',val:'mixto'}
+  ],async function(v,l){
+    G.fenotipo=v;await addBubble(l,'user');
+    G.lipedema=false;
+    if(v==='ginoide'){
+      await addBubble('¿Dolor a palpación muslos o hematomas espontáneos?','bot',300);
+      showChips([{label:'No',val:'no'},{label:'Sí — sospechar lipedema',val:'si'}],async function(lv,ll){
+        G.lipedema=lv==='si';await addBubble(ll,'user');s11();
+      });
+    } else s11();
+  },auto);
+}
+
+function computeFen(){
+  const sarco=G.sarcopeniaBits.size>0,edema=G.fovea!=='no',rcaP=G.rca>=0.5;
+  if(edema)return 'edematoso';if(sarco&&rcaP)return 'mixto';
+  if(sarco)return 'sarcopenico';if(rcaP)return 'androide';
+  if(G.rca!==null&&G.rca<0.5)return 'ginoide';return '';
+}
+
+async function s11(){
+  prog(11);stat('Generando diagnóstico…');
+  await addBubble('Procesando todos los datos…','bot',500);
+  await new Promise(function(r){setTimeout(r,900);});
+
+  const sarco=G.sarcopeniaBits.size>0;
+  const lbm=G.lbm,fbm=G.fbm,imc=G.imc||0,eM=G.sexo==='H',rcaP=G.rca>=0.5;
+  G.sarcoSuspected=sarco;
+
+  let ds='';
+  if(imc>=40)ds='Obesidad grado III (mórbida)';
+  else if(imc>=35)ds='Obesidad grado II';
+  else if(imc>=30)ds='Obesidad grado I';
+  else if(imc>=25)ds='Sobrepeso';
+  else ds='Peso normal';
+  const ext=[sarco?'Sarcopenia probable':'',G.fovea!=='no'?'Edema':'',G.stemmer==='pos'?'Linfedema probable':'',G.lipedema?'Sospecha lipedema':''].filter(Boolean);
+  G.diagStr=ds+(ext.length?' + '+ext.join(' + '):'');
+  const sev=imc>=35&&sarco?2:imc>=30||sarco?1:0;
+
+  // Main diagnosis
+  await addBubble('<div class="diag-card"><div class="diag-top d'+sev+'"><div class="diag-lbl">Diagnóstico sindrómico</div><div class="diag-val">'+G.diagStr+'</div></div><div class="diag-body">IMC '+imc.toFixed(1)+' kg/m²'+(G.rca?' · RCA '+G.rca.toFixed(2)+(rcaP?' ⚠️':''):'')+(G.score2Pct?' · SCORE2 '+G.score2Pct+'% ('+G.score2Cat+')':G.score2Cat?' · '+G.score2Cat:'')+'</div></div>','bot',300);
+
+  // Alerts
+  const als=[];
+  if(rcaP)als.push({t:'w',m:'<strong>Riesgo cardiometabólico '+(G.cintura>(eM?102:88)?'muy alto':'elevado')+'.</strong> Cribado DM2, HTA, dislipemia.'});
+  if(G.score2Cat==='Alto'||G.score2Cat==='Muy alto'||G.enf.has('ecv')||G.enf.has('icc'))als.push({t:'e',m:'<strong>Riesgo CV alto/muy alto.</strong> Objetivo LDL '+( G.ldlObj||'<55 mg/dL')+'. '+( G.s2tto||'')});
+  if(sarco)als.push({t:'w',m:'<strong>Sarcopenia probable:</strong> EVITAR restricción calórica sin soporte proteico. Priorizar fuerza.'});
+  if(G.fovea==='signif'){const dm={disnea:'Derivar CARDIOLOGÍA.',proteinuria:'Derivar NEFROLOGÍA.',asimetria:'🚨 TVP — derivar URGENTE.'};als.push({t:'e',m:'<strong>Edema significativo.</strong> '+(dm[G.signosE]||'Valorar causa sistémica.')});}
+  if(G.stemmer==='pos')als.push({t:'e',m:'<strong>Stemmer positivo.</strong> Derivar Angiología/Linfología.'});
+  if(G.aTsh>10)als.push({t:'e',m:'<strong>Hipotiroidismo severo (TSH >10).</strong> Derivar Endocrinología.'});
+  if(G.aVitD&&G.aVitD<12)als.push({t:'e',m:'<strong>Vitamina D <12 ng/mL.</strong> Suplementar urgente.'});
+  for(var i=0;i<als.length;i++)await addBubble('<div class="al '+als[i].t+'">'+als[i].m+'</div>','bot',200);
+
+  // GEB + proteínas
+  if(lbm){
+    const gebKM=Math.round(370+21.6*lbm),defMin=Math.round(gebKM*0.8),defMax=Math.round(gebKM*0.85);
+    const pMin=Math.round(lbm*2),pMax=Math.round(lbm*2.5);
+    await addBubble('<div class="plan-blk"><div class="plan-h">🔥 Energía y proteínas</div><div class="plan-b"><div class="mrow"><div class="mc"><div class="mc-v">'+gebKM+'</div><div class="mc-l">kcal/día GEB</div></div><div class="mc"><div class="mc-v">'+defMin+'–'+defMax+'</div><div class="mc-l">kcal/día déficit</div></div><div class="mc"><div class="mc-v">'+pMin+'–'+pMax+' g</div><div class="mc-l">proteína/día</div></div></div>GEB Katch-McArdle sobre <strong>'+lbm.toFixed(1)+' kg masa magra</strong> (Janmahasatian 2005).<br>Proteína 2,0–2,5 g/kg <strong>masa magra</strong> — no sobre peso total.</div></div>','bot',400);
+  }
+
+  // Ejercicio
+  await addBubble('<div class="plan-blk"><div class="plan-h">🏋️ Ejercicio</div><div class="plan-b"><strong>Cardio bajo impacto obligatorio'+(fbm?' ('+fbm.toFixed(1)+' kg grasa → estrés articular)':'')+':</strong> natación, elíptica, ciclismo. ≥150 min/sem.<br><strong>Fuerza hipertrófica '+(sarco?'3×/sem — PRIORIDAD':'2–3×/sem')+'</strong> · 60–75% 1RM · 8–12 reps · multiarticular.'+(sarco?'<br><strong>Sarcopenia: fuerza ANTES que cardio.</strong>':'')+'</div></div>','bot',400);
+
+  // Suplementos
+  const supls=[];
+  if(sarco){supls.push({n:'Proteína whey',d:'20–40 g post-ejercicio · activa mTOR'});supls.push({n:'Leucina',d:'3 g/día · mTOR independiente'});supls.push({n:'Creatina',d:'3–5 g/día + fuerza (Candow 2019)'});}
+  if((G.aVitD&&G.aVitD<30)||(!G.aVitD&&imc>=30))supls.push({n:'Vit D3',d:G.aVitD&&G.aVitD<12?'50.000 UI/sem × 8 sem · urgente':'1000–2000 UI/día mantenimiento'});
+  if(G.enf.has('dm2')||G.enf.has('mafld'))supls.push({n:'Berberina',d:'500 mg 2–3×/día · evidencia IR/MAFLD'});
+  if(supls.length){
+    let sh='<div class="plan-blk"><div class="plan-h">💊 Suplementos</div><div class="dgrid">';
+    supls.forEach(function(s){sh+='<div class="dc"><div class="dn">'+s.n+'</div><div class="dd">'+s.d+'</div></div>';});
+    await addBubble(sh+'</div></div>','bot',400);
+  }
+
+  // Fármacos obesidad
+  if(imc>=27){
+    const drugs=[
+      {n:'Orlistat 120 mg',d:'3×/día · ~3% peso · genérico'},
+      {n:'Mysimba',d:'Naltrexona/bupropión · ~5% peso'},
+      {n:'Saxenda',d:'Liraglutida 3 mg · ~6–8% peso'},
+      {n:'Wegovy',d:'Semaglutida 2,4 mg · <strong>~15–17%</strong> · 1ª elección'}
+    ];
+    if(G.enf.has('dm2'))drugs.push({n:'Mounjaro',d:'Tirzepatida · <strong>~20–22%</strong> · DM2+obesidad'});
+    let dh='<div class="plan-blk"><div class="plan-h">💉 Farmacoterapia obesidad (ESC/EASO 2023)</div><div class="dgrid">';
+    drugs.forEach(function(d){dh+='<div class="dc"><div class="dn">'+d.n+'</div><div class="dd">'+d.d+'</div></div>';});
+    dh += '<button class="proj-open-btn" onclick="openProjModal()">📉 Ver proyección de pérdida de peso a 1 año →</button>';
+    await addBubble(dh+'</div></div>','bot',400);
+  }
+
+  // Derivaciones
+  const der=[];
+  if(sarco||G.sarcfScore>=4)der.push('Nutrición Clínica');
+  if(G.score2Cat==='Alto'||G.score2Cat==='Muy alto'||G.enf.has('ecv')||G.enf.has('icc'))der.push('Cardiología');
+  if(G.enf.has('erc'))der.push('Nefrología');
+  if(G.stemmer==='pos')der.push('Angiología/Linfología');
+  if(G.lipedema)der.push('Angiología (lipedema)');
+  if(G.enf.has('saos'))der.push('Neumología');
+  if(G.aTsh>10)der.push('Endocrinología');
+  // Criterios bariátrica SECO/SEEDO/SNS: IMC≥40 siempre; IMC 35-39,9 + comorbilidad mayor
+  const comorb_mayor=G.enf.has('dm2')||G.enf.has('hta')||G.enf.has('saos')||G.enf.has('icc')||G.enf.has('erc')||G.enf.has('dislip')||G.enf.has('artros')||G.enf.has('ecv');
+  if(imc>=40||(imc>=35&&comorb_mayor))der.push('Cirugía bariátrica (IMC '+(imc>=40?'≥40':'35–39,9 + comorbilidad mayor — valorar criterios SNS)'));
+  if(der.length)await addBubble('<div class="al i"><strong>📋 Derivaciones:</strong> '+der.join(' · ')+'</div>','bot',300);
+  await addBubble('<div class="al i"><strong>📅 Seguimiento:</strong> Peso + cintura 1 mes · SARC-F + 5-STS 3 meses · Analítica 3–6 meses.</div>','bot',300);
+  await addBubble('Evaluación completada. <strong>¿Guardamos al paciente?</strong>','bot',500);
+
+  // Save button
+  clr();
+  const b=document.createElement('button');b.className='cbtn';
+  b.textContent='💾 Guardar paciente';
+  b.onclick=openSaveModal;inp.appendChild(b);
+  const b2=document.createElement('button');b2.className='cbtn';
+  b2.style.cssText='margin-top:7px;background:var(--surf2);color:var(--ink2);box-shadow:none;border:1.5px solid var(--border2);';
+  b2.textContent='⟳ Nueva evaluación sin guardar';
+  b2.onclick=resetEval;inp.appendChild(b2);
+  stat('Evaluación completada ✓');
+}
+
+// ═══════════════════════════════
+// SAVE MODAL
+// ═══════════════════════════════
+async function openSaveModal(){
+  document.getElementById('mSexo').value=G.sexo==='H'?'♂ Hombre':'♀ Mujer';
+  if(G.edad)document.getElementById('mEdad').value=G.edad;
+  // Auto-assign next order number
+  const pts=await dbAll('patients');
+  const maxOrden=pts.reduce(function(m,p){return Math.max(m,p.orden||0);},0);
+  document.getElementById('mOrden').value=maxOrden+1;
+  document.getElementById('mName').value='';
+  document.getElementById('mId').value='';
+  gsValue='nd';
+  ['gsY','gsN','gsU'].forEach(function(id){document.getElementById(id).classList.remove('sel');});
+  document.getElementById('gsU').classList.add('sel');
+  document.getElementById('saveModal').classList.add('on');
+  setTimeout(function(){document.getElementById('mName').focus();},200);
+}
+function closeModal(){document.getElementById('saveModal').classList.remove('on');}
+function setGS(v){
+  gsValue=v;
+  document.getElementById('gsY').classList.toggle('sel',v==='si');
+  document.getElementById('gsN').classList.toggle('sel',v==='no');
+  document.getElementById('gsU').classList.toggle('sel',v==='nd');
+}
+
+async function savePatient(){
+  const orden=parseInt(document.getElementById('mOrden').value)||null;
+  const iniciales=(document.getElementById('mName').value.trim().toUpperCase())||'???';
+  const hc=document.getElementById('mId').value.trim();
+  // Validate
+  if(!orden){await addBubble('Introduce el número de orden del paciente.','warn');return;}
+  if(!/^[A-Z]\.[A-Z]\.[A-Z]\.?$/.test(iniciales)&&iniciales!=='???'){
+    // allow flexible format - just warn if too long
+  }
+  if(hc&&!/^[0-9]{1,5}$/.test(hc)){await addBubble('El número de historia debe tener hasta 5 dígitos numéricos.','warn');return;}
+  // Build display name
+  const name=orden+' · '+iniciales+(hc?' · HC'+hc:'');
+  const extId=hc||String(orden);
+  const visit={
+    date:new Date().toISOString(),
+    data:{
+      sexo:G.sexo,edad:G.edad,peso:G.peso,altura:G.altura,imc:G.imc,
+      pesoAj:G.pesoAj,cintura:G.cintura,cadera:G.cadera,gemelar:G.gemelar,
+      rca:G.rca,lbm:G.lbm,fbm:G.fbm,fatPct:G.fatPct,
+      enf:[...G.enf],farm:[...G.farm],
+      score2Pct:G.score2Pct,score2Cat:G.score2Cat,
+      sarcfScore:G.sarcfScore,sts:G.sts,
+      sarcopeniaBits:[...G.sarcopeniaBits],vel:G.vel,
+      fovea:G.fovea,stemmer:G.stemmer,
+      aGluc:G.aGluc,aHba1c:G.aHba1c,aLdl:G.aLdl,aTg:G.aTg,
+      aUrico:G.aUrico,aVitD:G.aVitD,aTsh:G.aTsh
+    },
+    diagnosis:G.diagStr,
+    sarcoSuspected:G.sarcoSuspected,
+    goldStandard:gsValue
+  };
+
+  // Check if patient exists (by extId)
+  let patient=null;
+  if(extId){
+    const all=await dbAll('patients');
+    patient=all.find(function(p){return p.extId===extId;});
+  }
+  if(patient){
+    patient.visits.push(visit);
+    patient.name=name||patient.name;
+    patient.orden=orden||patient.orden;
+    patient.iniciales=iniciales!=='???'?iniciales:patient.iniciales;
+    patient.hc=hc||patient.hc;
+  } else {
+    patient={id:uid(),extId:extId,orden:orden,iniciales:iniciales,hc:hc,name:name,createdAt:new Date().toISOString(),visits:[visit]};
+  }
+  await dbPut('patients',patient);
+  closeModal();
+  updatePtCount();
+  await addBubble('✅ Paciente <strong>'+name+'</strong> guardado correctamente. Puedes verlo en <strong>👥 Pacientes</strong>.','sys');
+  clr();
+  const b=document.createElement('button');b.className='cbtn';
+  b.textContent='⟳ Nueva evaluación';b.onclick=resetEval;inp.appendChild(b);
+}
+
+// ═══════════════════════════════
+// PATIENT LIST
+// ═══════════════════════════════
+async function renderPatients(){
+  let pts=[];
+  try{ pts=await dbAll('patients'); } catch(e){ pts=[]; }
+  const el=document.getElementById('ptList');
+  // Filter: only records with at least one visit
+  const validPts=pts.filter(function(p){return p.visits&&p.visits.length>0;});
+  updatePtCount(validPts.length);
+  if(!validPts.length){
+    el.innerHTML='<div class="empty-state"><div class="ei">👥</div><div class="et">Sin pacientes guardados</div><div class="es">Completa una evaluación y pulsa "Guardar paciente"</div></div>';
+    return;
+  }
+  try{
+    validPts.sort(function(a,b){
+      const da=new Date(a.visits[a.visits.length-1].date);
+      const db2=new Date(b.visits[b.visits.length-1].date);
+      return db2-da;
+    });
+  } catch(e){}
+  el.innerHTML='';
+  validPts.forEach(function(pt){
+    try{
+      const lastV=pt.visits[pt.visits.length-1];
+      const initials=pt.orden?String(pt.orden).padStart(2,'0'):(pt.iniciales?pt.iniciales.slice(0,2):'??');
+      const card=document.createElement('div');card.className='pt-card';
+      const ptLabel=(pt.orden?'#'+pt.orden+' ':'')+( pt.iniciales||pt.name)+(pt.hc?' · HC'+pt.hc:'');
+      card.innerHTML=
+        '<div class="pt-top">'+
+          '<div class="pt-av">'+initials+'</div>'+
+          '<div>'+
+            '<div class="pt-name">'+ptLabel+'</div>'+
+            '<div class="pt-date">'+pt.visits.length+' visita'+(pt.visits.length!==1?'s':'')+' · Última: '+new Date(lastV.date).toLocaleDateString('es-ES')+'</div>'+
+          '</div>'+
+        '</div>'+
+        '<div class="pt-diag">'+(lastV.diagnosis||'Sin diagnóstico')+'</div>'+
+        '<div class="pt-chips" style="margin-top:6px">'+
+          '<span class="pt-chip">IMC '+(lastV.data&&lastV.data.imc?lastV.data.imc.toFixed(1):'—')+'</span>'+
+          '<span class="pt-chip">SARC-F '+(lastV.data&&lastV.data.sarcfScore!==null&&lastV.data.sarcfScore!==undefined?lastV.data.sarcfScore:'—')+'/10</span>'+
+          (lastV.sarcoSuspected?'<span class="pt-chip" style="background:#ffcdd2;border-color:#ef9a9a;color:#b71c1c">Sarcopenia probable</span>':'')+
+        '</div>';
+      card.onclick=function(){openDetail(pt.id);};
+      el.appendChild(card);
+    } catch(e){ console.warn('Error rendering patient',pt.id,e); }
+  });
+}
+
+// ═══════════════════════════════
+// PATIENT DETAIL
+// ═══════════════════════════════
+async function openDetail(id){
+  const pt=await dbGet('patients',id);
+  if(!pt)return;
+  document.getElementById('detName').textContent=(pt.orden?'#'+pt.orden+' ':'')+( pt.iniciales||pt.name)+(pt.hc?' · HC'+pt.hc:'');
+  document.getElementById('detSub').textContent=pt.visits.length+' visita'+(pt.visits.length!==1?'s':', primera evaluación: ')+' · '+new Date(pt.createdAt).toLocaleDateString('es-ES');
+  const body=document.getElementById('detBody');
+  body.innerHTML='';
+
+  // Charts
+  if(pt.visits.length>1){
+    const chartDiv=document.createElement('div');
+    chartDiv.innerHTML='<div class="section-title">Evolución</div>';
+    body.appendChild(chartDiv);
+    const metrics=[
+      {key:'peso',label:'Peso (kg)',color:'#1565c0'},
+      {key:'cintura',label:'Cintura (cm)',color:'#b71c1c'},
+      {key:'imc',label:'IMC (kg/m²)',color:'#006064'},
+      {key:'sarcfScore',label:'SARC-F',color:'#e65100'}
+    ];
+    metrics.forEach(function(m){
+      const vals=pt.visits.map(function(v){return m.key==='sarcfScore'?v.data.sarcfScore:v.data[m.key];});
+      if(vals.some(function(v){return v!==null&&v!==undefined;})){
+        const dates=pt.visits.map(function(v){return new Date(v.date).toLocaleDateString('es-ES',{day:'2-digit',month:'2-digit'});});
+        body.appendChild(drawChart(vals,dates,m.label,m.color));
+      }
+    });
+  }
+
+  // Visits
+  const vDiv=document.createElement('div');
+  vDiv.innerHTML='<div class="section-title">Historial de visitas</div>';
+  const vReversed=pt.visits.slice().reverse();
+  vReversed.forEach(function(v,idx){
+    const vc=document.createElement('div');vc.className='visit-card';
+    const isLast=idx===0;
+    let rows='';
+    const row=function(k,val){if(val!==null&&val!==undefined&&val!=='')rows+='<div class="v-row"><span class="v-k">'+k+'</span><span class="v-v">'+val+'</span></div>';};
+    row('Diagnóstico',v.diagnosis);
+    row('IMC',v.data.imc?v.data.imc.toFixed(1)+' kg/m²':null);
+    row('Peso',v.data.peso?v.data.peso+' kg':null);
+    row('Cintura',v.data.cintura?v.data.cintura+' cm':null);
+    row('RCA',v.data.rca?v.data.rca.toFixed(3):null);
+    row('Masa magra',v.data.lbm?v.data.lbm.toFixed(1)+' kg':null);
+    row('SARC-F',v.data.sarcfScore!==null?v.data.sarcfScore+'/10':null);
+    row('5-STS',v.data.sts!==null?v.data.sts+' s':null);
+    row('SCORE2',v.data.score2Pct?v.data.score2Pct+'% ('+v.data.score2Cat+')':v.data.score2Cat||null);
+    row('LDL',v.data.aLdl?v.data.aLdl+' mg/dL':null);
+    row('HbA1c',v.data.aHba1c?v.data.aHba1c+'%':null);
+    row('Vit D',v.data.aVitD?v.data.aVitD+' ng/mL':null);
+    row('Patrón oro',v.goldStandard==='si'?'Sarcopenia confirmada (BIA/Jamar)':v.goldStandard==='no'?'Sarcopenia descartada':null);
+    vc.innerHTML='<div class="v-date">'+(isLast?'🔵 Última visita · ':'')+new Date(v.date).toLocaleDateString('es-ES',{year:'numeric',month:'long',day:'numeric'})+'</div>'+rows;
+    vDiv.appendChild(vc);
+  });
+  body.appendChild(vDiv);
+
+  // Nueva visita btn
+  const nb=document.createElement('button');nb.className='cbtn';nb.style.cssText='margin-top:6px;';
+  nb.textContent='+ Nueva visita';
+  nb.onclick=function(){
+    resetEval();
+    // Pre-fill modal with this patient on save
+    setTimeout(function(){
+      document.getElementById('mOrden').value=pt.orden||'';
+      document.getElementById('mName').value=pt.iniciales||'';
+      document.getElementById('mId').value=pt.hc||pt.extId||'';
+    },100);
+    goView('vEval');
+  };
+  body.appendChild(nb);
+
+  // Export individual
+  const eb=document.createElement('button');eb.className='cbtn';eb.style.cssText='margin-top:7px;background:var(--surf2);color:var(--ink2);box-shadow:none;border:1.5px solid var(--border2);';
+  eb.textContent='⬇ Exportar CSV';
+  eb.onclick=function(){exportPatientCSV(pt);};
+  body.appendChild(eb);
+
+  const db_btn=document.createElement('button');db_btn.className='cbtn';
+  db_btn.style.cssText='margin-top:7px;background:var(--err-bg);color:var(--red);box-shadow:none;border:1.5px solid var(--err-bdr);';
+  db_btn.textContent='🗑 Eliminar este paciente del registro';
+  db_btn.onclick=function(){deletePatient(pt.id,pt.name);};
+  body.appendChild(db_btn);
+
+  showView('vDet');
+  document.getElementById('vDet').scrollTo(0,0);
+}
+
+// ═══════════════════════════════
+// CANVAS CHARTS
+// ═══════════════════════════════
+function drawChart(vals,labels,title,color){
+  const wrap=document.createElement('div');wrap.style.cssText='margin-bottom:12px;';
+  const t=document.createElement('div');t.style.cssText='font-size:.72rem;font-weight:700;color:var(--ink2);margin-bottom:5px;';t.textContent=title;
+  const canvas=document.createElement('canvas');canvas.height=110;canvas.className='chart';
+  wrap.appendChild(t);wrap.appendChild(canvas);
+  requestAnimationFrame(function(){
+    const W=canvas.offsetWidth||300;canvas.width=W;
+    const ctx=canvas.getContext('2d');
+    const pad={t:12,r:12,b:28,l:38};
+    const cw=W-pad.l-pad.r,ch=canvas.height-pad.t-pad.b;
+    const nonNull=vals.filter(function(v){return v!==null&&v!==undefined;});
+    if(!nonNull.length)return;
+    const mn=Math.min.apply(null,nonNull),mx=Math.max.apply(null,nonNull);
+    const range=mx-mn||1;
+    function px(i){return pad.l+(i/(vals.length-1||1))*cw;}
+    function py(v){return pad.t+ch-(((v-mn)/range)*ch);}
+    // Grid
+    ctx.strokeStyle='rgba(100,120,140,.13)';ctx.lineWidth=1;
+    for(let i=0;i<=4;i++){const y=pad.t+(i/4)*ch;ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(pad.l+cw,y);ctx.stroke();}
+    // Y labels
+    ctx.fillStyle='rgba(96,125,143,.8)';ctx.font='500 9px Inter,sans-serif';ctx.textAlign='right';
+    for(let i=0;i<=2;i++){const v=mn+(i/2)*range;ctx.fillText(v.toFixed(1),pad.l-4,pad.t+ch-(i/2)*ch+3);}
+    // Line
+    ctx.beginPath();ctx.strokeStyle=color;ctx.lineWidth=2.5;ctx.lineJoin='round';
+    let started=false;
+    vals.forEach(function(v,i){
+      if(v===null||v===undefined)return;
+      const x=px(i),y=py(v);
+      if(!started){ctx.moveTo(x,y);started=true;}else ctx.lineTo(x,y);
+    });
+    ctx.stroke();
+    // Points
+    vals.forEach(function(v,i){
+      if(v===null||v===undefined)return;
+      ctx.beginPath();ctx.arc(px(i),py(v),4,0,Math.PI*2);
+      ctx.fillStyle='white';ctx.fill();ctx.strokeStyle=color;ctx.lineWidth=2;ctx.stroke();
+    });
+    // X labels
+    ctx.fillStyle='rgba(96,125,143,.9)';ctx.textAlign='center';ctx.font='500 8.5px Inter,sans-serif';
+    labels.forEach(function(l,i){if(labels.length<=6||i%Math.ceil(labels.length/6)===0)ctx.fillText(l,px(i),canvas.height-5);});
+  });
+  return wrap;
+}
+
+// ═══════════════════════════════
+// RESEARCH VIEW
+// ═══════════════════════════════
+async function renderResearch(){
+  const pts=await dbAll('patients');
+  const el=document.getElementById('resBody');
+  el.innerHTML='';
+
+  // Flatten all visits with goldStandard data
+  const cases=[];
+  pts.forEach(function(pt){
+    pt.visits.forEach(function(v){
+      if(v.goldStandard!=='nd')cases.push({ptName:pt.name,ptId:pt.extId||pt.id.slice(0,6),date:v.date,idx:v.sarcoSuspected,gs:v.goldStandard==='si'});
+    });
+  });
+
+  // 2x2 table
+  let tp=0,tn=0,fp=0,fn=0;
+  cases.forEach(function(c){
+    if(c.idx&&c.gs)tp++;
+    else if(!c.idx&&!c.gs)tn++;
+    else if(c.idx&&!c.gs)fp++;
+    else fn++;
+  });
+  // Also build lab-confirmed stats (BIA+Jamar vs clinical)
+  const labCases=[];
+  pts.forEach(function(pt){
+    if(pt.labVisits&&pt.labVisits.length&&pt.visits&&pt.visits.length){
+      pt.labVisits.forEach(function(lv){
+        const clinV=pt.visits[pt.visits.length-1];
+        labCases.push({ptName:pt.name,clinical:clinV.sarcoSuspected,lab:lv.sarcoLabConfirmed,labStage:lv.data.stage});
+      });
+    }
+  });
+  let ltp=0,ltn=0,lfp=0,lfn=0;
+  labCases.forEach(function(c){
+    if(c.clinical&&c.lab)ltp++;
+    else if(!c.clinical&&!c.lab)ltn++;
+    else if(c.clinical&&!c.lab)lfp++;
+    else lfn++;
+  });
+  const n=tp+tn+fp+fn;
+  const se=n?tp/(tp+fn||1):null;
+  const sp=n?tn/(tn+fp||1):null;
+  const ppv=n?tp/(tp+fp||1):null;
+  const npv=n?tn/(tn+fn||1):null;
+  const lrp=se&&sp?(se/(1-sp)):null;
+  const lrn=se&&sp?((1-se)/sp):null;
+  const po=n?(tp+tn)/n:null;
+  const pe=n?((tp+fp)/n*(tp+fn)/n+(tn+fn)/n*(tn+fp)/n):null;
+  const kappa=po&&pe&&pe<1?(po-pe)/(1-pe):null;
+
+  const pct=function(v){return v!==null?Math.round(v*1000)/10+'%':'—';};
+  const num=function(v,d){return v!==null?v.toFixed(d||2):'—';};
+
+  // Stats grid
+  const sg=document.createElement('div');
+  sg.innerHTML='<div class="section-title">Estadísticos acumulados (n='+n+' casos con patrón oro)</div>'+
+    '<div class="stat-grid">'+
+    '<div class="stat-box"><div class="stat-v">'+pct(se)+'</div><div class="stat-l">Sensibilidad</div></div>'+
+    '<div class="stat-box"><div class="stat-v">'+pct(sp)+'</div><div class="stat-l">Especificidad</div></div>'+
+    '<div class="stat-box"><div class="stat-v">'+pct(ppv)+'</div><div class="stat-l">VPP</div></div>'+
+    '<div class="stat-box"><div class="stat-v">'+pct(npv)+'</div><div class="stat-l">VPN</div></div>'+
+    '<div class="stat-box"><div class="stat-v">'+num(lrp,1)+'</div><div class="stat-l">LR+</div></div>'+
+    '<div class="stat-box"><div class="stat-v">'+num(lrn,2)+'</div><div class="stat-l">LR−</div></div>'+
+    '<div class="stat-box"><div class="stat-v">'+num(kappa,2)+'</div><div class="stat-l">Kappa</div></div>'+
+    '<div class="stat-box"><div class="stat-v">'+n+'</div><div class="stat-l">n casos</div></div>'+
+    '<div class="stat-box"><div class="stat-v">'+(tp+fn)+'</div><div class="stat-l">Sarcopenia GS</div></div>'+
+    '</div>';
+  el.appendChild(sg);
+
+  if(n<30){el.appendChild(Object.assign(document.createElement('div'),{className:'warn-n30',textContent:'⚠️ n='+n+' — Se necesitan al menos 30 casos con patrón oro para estadísticos publicables.'}));}
+
+  // 2x2 table
+  const t2=document.createElement('div');
+  t2.innerHTML='<div class="section-title" style="margin-top:14px">Tabla 2×2</div>'+
+    '<table class="table-2x2"><thead><tr><th></th><th>GS Sarcopenia +</th><th>GS Sarcopenia −</th></tr></thead>'+
+    '<tbody><tr><th>ObesDx +</th><td class="c-tp">VP '+tp+'</td><td class="c-fp">FP '+fp+'</td></tr>'+
+    '<tr><th>ObesDx −</th><td class="c-fn">FN '+fn+'</td><td class="c-tn">VN '+tn+'</td></tr></tbody></table>';
+  el.appendChild(t2);
+
+  // Per-patient gold standard input
+  const gsDiv=document.createElement('div');
+  gsDiv.innerHTML='<div class="section-title" style="margin-top:14px">Patrón oro por paciente</div>';
+  if(!pts.length){gsDiv.innerHTML+='<div class="empty-state"><div class="ei">📊</div><div class="et">Sin pacientes</div></div>';}
+  else{
+    pts.forEach(function(pt){
+      pt.visits.forEach(function(v,vi){
+        const row=document.createElement('div');row.className='gs-row';
+        const idx=v.sarcoSuspected;
+        const gsCurrent=v.goldStandard;
+        row.innerHTML='<div><div class="gs-name">'+pt.name+(pt.extId?' #'+pt.extId:'')+'<span style="font-size:.64rem;color:var(--ink3);margin-left:6px">'+new Date(v.date).toLocaleDateString('es-ES')+'</span></div><div class="gs-idx">ObesDx: '+(idx?tag('Sarcopenia sospecha','err'):tag('Sin sarcopenia','ok'))+'</div></div><div class="gs-sel"></div>';
+        const btnY=document.createElement('button');btnY.className='gs-btn'+(gsCurrent==='si'?' pos':'');btnY.textContent='Sí (BIA/Jamar)';
+        const btnN=document.createElement('button');btnN.className='gs-btn'+(gsCurrent==='no'?' neg':'');btnN.textContent='No';
+        const btnU=document.createElement('button');btnU.className='gs-btn'+(gsCurrent==='nd'?' sel':'');btnU.textContent='N/D';
+        function updateGS(val){
+          v.goldStandard=val;
+          dbPut('patients',pt).then(function(){renderResearch();});
+        }
+        btnY.onclick=function(){updateGS('si');};btnN.onclick=function(){updateGS('no');};btnU.onclick=function(){updateGS('nd');};
+        row.querySelector('.gs-sel').appendChild(btnY);row.querySelector('.gs-sel').appendChild(btnN);row.querySelector('.gs-sel').appendChild(btnU);
+        gsDiv.appendChild(row);
+      });
+    });
+  }
+  el.appendChild(gsDiv);
+
+  // ── Lab concordance section ──
+  if(labCases.length){
+    const labDiv=document.createElement('div');
+    const ln=ltp+ltn+lfp+lfn;
+    const lSe=ln?ltp/(ltp+lfn||1):null;
+    const lSp=ln?ltn/(ltn+lfp||1):null;
+    const lPo=ln?(ltp+ltn)/ln:null;
+    const lPe=ln?((ltp+lfp)/ln*(ltp+lfn)/ln+(ltn+lfn)/ln*(ltn+lfp)/ln):null;
+    const lKappa=lPo&&lPe&&lPe<1?(lPo-lPe)/(1-lPe):null;
+    labDiv.innerHTML='<div class="section-title" style="margin-top:18px">⚖️ Concordancia Clínica vs BIA+Jamar (n='+ln+')</div>'+
+      '<div class="stat-grid">'+
+      '<div class="stat-box"><div class="stat-v">'+(lSe!==null?Math.round(lSe*1000)/10+'%':'—')+'</div><div class="stat-l">Sensibilidad</div></div>'+
+      '<div class="stat-box"><div class="stat-v">'+(lSp!==null?Math.round(lSp*1000)/10+'%':'—')+'</div><div class="stat-l">Especificidad</div></div>'+
+      '<div class="stat-box"><div class="stat-v">'+(lKappa!==null?lKappa.toFixed(2):'—')+'</div><div class="stat-l">Kappa</div></div>'+
+      '</div>'+
+      '<div style="margin-top:8px"><table class="table-2x2"><thead><tr><th></th><th>BIA+Jamar +</th><th>BIA+Jamar −</th></tr></thead>'+
+      '<tbody><tr><th>Clínica +</th><td class="c-tp">VP '+ltp+'</td><td class="c-fp">FP '+lfp+'</td></tr>'+
+      '<tr><th>Clínica −</th><td class="c-fn">FN '+lfn+'</td><td class="c-tn">VN '+ltn+'</td></tr></tbody></table></div>'+
+      '<div style="margin-top:7px;font-size:.72rem;color:var(--ink3)">Compara sospecha clínica (ObesClin Pro) vs. confirmación por aparatos (BIA+Jamar). Casos disponibles: '+labCases.map(function(c){return c.ptName;}).join(', ')+'.</div>';
+    el.appendChild(labDiv);
+  }
+}
+
+// ═══════════════════════════════
+// EXPORTS
+// ═══════════════════════════════
+async function exportCSV(){
+  const pts=await dbAll('patients');
+  if(!pts.length){alert('No hay pacientes guardados.');return;}
+  const cols=['n_orden','iniciales','n_historia','id_paciente','fecha_visita','sexo','edad','peso_kg','altura_cm','imc','cintura_cm','rca','masa_magra_kg','masa_grasa_kg','pct_grasa','sarcf_score','sts_s','score2_pct','score2_cat','glucosa','hba1c','ldl','tg','vit_d','diagnostico','sarcopenia_sospecha','patron_oro'];
+  const rows=[cols.join(',')];
+  pts.forEach(function(pt){
+    pt.visits.forEach(function(v){
+      const d=v.data;
+      const r=[
+        pt.orden||'',pt.iniciales||'',pt.hc||'',pt.extId||pt.id.slice(0,8),new Date(v.date).toLocaleDateString('es-ES'),
+        d.sexo,d.edad||'',d.peso||'',d.altura||'',d.imc?d.imc.toFixed(2):'',
+        d.cintura||'',d.rca?d.rca.toFixed(3):'',
+        d.lbm?d.lbm.toFixed(1):'',d.fbm?d.fbm.toFixed(1):'',d.fatPct?d.fatPct.toFixed(1):'',
+        d.sarcfScore!==null?d.sarcfScore:'',d.sts!==null?d.sts:'',
+        d.score2Pct||'',d.score2Cat||'',
+        d.aGluc||'',d.aHba1c||'',d.aLdl||'',d.aTg||'',d.aVitD||'',
+        '"'+v.diagnosis.replace(/"/g,"'")+'"',
+        v.sarcoSuspected?1:0,
+        v.goldStandard==='si'?1:v.goldStandard==='no'?0:''
+      ];
+      rows.push(r.join(','));
+    });
+  });
+  download('ObesclinPro_pacientes.csv','data:text/csv;charset=utf-8,'+encodeURIComponent(rows.join('\n')));
+}
+
+async function exportResearchCSV(){
+  const pts=await dbAll('patients');
+  const cols=['paciente','fecha','sarcopenia_obesdx','patron_oro_sarcopenia'];
+  const rows=[cols.join(',')];
+  pts.forEach(function(pt){
+    pt.visits.forEach(function(v){
+      if(v.goldStandard!=='nd'){
+        rows.push([pt.name,new Date(v.date).toLocaleDateString('es-ES'),v.sarcoSuspected?1:0,v.goldStandard==='si'?1:0].join(','));
+      }
+    });
+  });
+  download('ObesclinPro_investigacion.csv','data:text/csv;charset=utf-8,'+encodeURIComponent(rows.join('\n')));
+}
+
+function exportPatientCSV(pt){
+  const cols=['fecha','diagnostico','peso_kg','imc','cintura_cm','rca','masa_magra_kg','sarcf','sts_s','glucosa','hba1c','ldl','vit_d'];
+  const rows=[cols.join(',')];
+  pt.visits.forEach(function(v){
+    const d=v.data;
+    rows.push([new Date(v.date).toLocaleDateString('es-ES'),'"'+v.diagnosis.replace(/"/g,"'")+'"',d.peso||'',d.imc?d.imc.toFixed(2):'',d.cintura||'',d.rca?d.rca.toFixed(3):'',d.lbm?d.lbm.toFixed(1):'',d.sarcfScore!==null?d.sarcfScore:'',d.sts!==null?d.sts:'',d.aGluc||'',d.aHba1c||'',d.aLdl||'',d.aVitD||''].join(','));
+  });
+  download(pt.name.replace(/\s/g,'_')+'_ObesPilot.csv','data:text/csv;charset=utf-8,'+encodeURIComponent(rows.join('\n')));
+}
+
+function download(name,uri){const a=document.createElement('a');a.href=uri;a.download=name;a.click();}
+
+async function updatePtCount(n){
+  if(n===undefined){const pts=await dbAll('patients');n=pts.length;}
+  document.getElementById('ptCount').textContent=n+' pac.';
+}
+
+// ═══════════════════════════════
+// RESET
+// ═══════════════════════════════
+function resetEval(){
+  Object.assign(G,{
+    sexo:'',edad:null,peso:null,altura:null,imc:null,pesoIdeal:null,pesoAj:null,
+    enf:new Set(),farm:new Set(),cintura:null,cadera:null,gemelar:null,
+    gemelarBajo:false,rca:null,whr:null,lbm:null,fbm:null,fatPct:null,
+    aGluc:null,aHba1c:null,aCreat:null,aTsh:null,aAlt:null,aLdl:null,aTg:null,aUrico:null,aVitD:null,
+    score2Pct:null,score2Cat:'',ldlObj:'',s2tto:'',
+    sarcf:{s:null,a:null,r:null,c:null,f:null},sarcfScore:null,
+    sts:null,vel:null,gemAnormal:false,sarcopeniaBits:new Set(),
+    fovea:'no',stemmer:'neg',edistrib:'bil',signosE:'ninguno',
+    fenotipo:'',lipedema:false,diagStr:'',diagFull:'',sarcoSuspected:false
+  });
+  chat.innerHTML='';clr();window._labClinicSTS=undefined;window._labClinicVel=null;window._labClinicSPPB=null;
+  document.getElementById('pf').style.width='0%';
+  s1();
+}
+
+// ── INIT ──
+initDB().then(function(){updatePtCount();s1();});
+
+// ═══════════════════════════════
+// PROYECCIÓN PÉRDIDA DE PESO
+// ═══════════════════════════════
+const TX = [
+  {n:'Dieta + ejercicio',    pct:5,  range:'3–7%',  color:'#78909C', cat:'conductual'},
+  {n:'Orlistat 120 mg',      pct:4,  range:'2–6%',  color:'#5C6BC0', cat:'farmaco'},
+  {n:'Mysimba',              pct:5,  range:'4–7%',  color:'#7E57C2', cat:'farmaco'},
+  {n:'Saxenda 3 mg',         pct:8,  range:'6–10%', color:'#26A69A', cat:'glp1'},
+  {n:'Wegovy 2,4 mg',        pct:15, range:'13–17%',color:'#00897B', cat:'glp1'},
+  {n:'Mounjaro 5 mg',        pct:15, range:'13–17%',color:'#F57C00', cat:'dual'},
+  {n:'Mounjaro 10 mg',       pct:19, range:'17–22%',color:'#EF6C00', cat:'dual'},
+  {n:'Mounjaro 15 mg',       pct:21, range:'19–24%',color:'#E65100', cat:'dual'},
+  {n:'Manga gástrica',       pct:25, range:'20–30%',color:'#C62828', cat:'cirugia'},
+  {n:'Bypass gástrico (RYGB)',pct:30,range:'25–35%',color:'#B71C1C', cat:'cirugia'},
+];
+
+function openProjModal(){
+  const peso = G.peso || 95;
+  document.getElementById('projSlider').value = peso;
+  document.getElementById('projPesoLbl').textContent = peso;
+  document.getElementById('projBadgePeso').textContent = peso;
+  updateProjChart();
+  document.getElementById('projOv').classList.add('on');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeProjModal(){
+  document.getElementById('projOv').classList.remove('on');
+  document.body.style.overflow = '';
+}
+
+function updateProjChart(){
+  const peso = parseInt(document.getElementById('projSlider').value);
+  document.getElementById('projPesoLbl').textContent = peso;
+  document.getElementById('projBadgePeso').textContent = peso;
+  renderProjChart(peso);
+}
+
+function renderProjChart(peso){
+  const maxPct = 33;
+  let html = '<table class="proj-tbl"><thead><tr>';
+  html += '<th>Tratamiento</th><th>%</th><th>Kg perdidos</th><th>Peso a 1 año</th><th style="min-width:80px">Rango</th></tr></thead><tbody>';
+  TX.forEach(function(t){
+    const kg = Math.round(peso * t.pct / 10) / 10;
+    const pf  = Math.round((peso - kg) * 10) / 10;
+    const barW = Math.round(t.pct / maxPct * 100);
+    html += '<tr>';
+    html += '<td><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:'+t.color+';margin-right:6px;vertical-align:middle"></span><strong style="color:var(--ink)">'+t.n+'</strong></td>';
+    html += '<td><strong style="color:'+t.color+';font-size:.85rem">&#8722;'+t.pct+'%</strong></td>';
+    html += '<td><strong style="color:var(--ink)">&#8722;'+kg+' kg</strong></td>';
+    html += '<td><strong style="color:var(--ink)">'+pf+' kg</strong>';
+    // mini bar below weight
+    html += '<div class="proj-bar-wrap" style="margin-top:3px"><div class="proj-bar" style="width:'+barW+'%;background:'+t.color+'"></div></div></td>';
+    html += '<td style="color:var(--ink3);font-size:.7rem">'+t.range+'</td>';
+    html += '</tr>';
+  });
+  html += '</tbody></table>';
+  document.getElementById('projChartWrap').innerHTML = html;
+}
+
+// ═══════════════════════════════
+// LAB: BIA + JAMAR · EWGSOP2 2019
+// ═══════════════════════════════
+let labPatients = [];
+
+async function initLab(){
+  labPatients = await dbAll('patients');
+  renderLabForm();
+}
+
+function renderLabForm(){
+  const body = document.getElementById('labBody');
+  const opts = labPatients.map(function(p,i){
+    const lbl=(p.orden?'#'+p.orden+' ':'')+( p.iniciales||p.name)+(p.hc?' HC'+p.hc:''); return '<option value="'+i+'">'+lbl+'</option>';
+  }).join('');
+
+  body.innerHTML = `
+  <div class="lab-card">
+    <div class="lab-card-h">👤 Vincular a paciente</div>
+    <div class="lab-f">
+      <div class="lab-l">Selecciona paciente del registro</div>
+      <select class="lab-sel" id="labPtSel">
+        <option value="">— Evaluación sin vincular —</option>
+        ${opts}
+      </select>
+    </div>
+  </div>
+
+  <div class="lab-card">
+    <div class="lab-card-h">📐 Datos del paciente</div>
+    <div class="lab-row">
+      <div class="lab-f"><div class="lab-l">Sexo biológico</div>
+        <select class="lab-sel" id="labSexo">
+          <option value="H">♂ Hombre</option>
+          <option value="M">♀ Mujer</option>
+        </select>
+      </div>
+      <div class="lab-f"><div class="lab-l">Altura (cm)</div>
+        <input class="lab-i" type="number" id="labAltura" placeholder="167" step="0.5">
+      </div>
+    </div>
+    <div class="lab-row">
+      <div class="lab-f"><div class="lab-l">Edad (años)</div>
+        <input class="lab-i" type="number" id="labEdad" placeholder="58" step="1">
+      </div>
+      <div class="lab-f"><div class="lab-l">Peso (kg)</div>
+        <input class="lab-i" type="number" id="labPeso" placeholder="94.0" step="0.1">
+      </div>
+    </div>
+  </div>
+
+  <div class="lab-card">
+    <div class="lab-card-h">🔬 TANITA BC-613 — Resultados de la impresión</div>
+    <div style="font-size:.72rem;color:var(--ink3);margin-bottom:10px;line-height:1.5;background:var(--surf2);padding:8px 10px;border-radius:var(--r-xs);border-left:3px solid var(--brand)">
+      Introduce los valores tal como aparecen en la impresión de la BC-613. La ASMM (masa muscular apendicular) se calcula automáticamente sumando los cuatro segmentos.
+      <br><strong style="color:var(--ink2)">Nota:</strong> TANITA define «Masa muscular» = FFM − Masa ósea, aproximación a la masa muscular esquelética sin requerir DEXA.
+    </div>
+
+    <div style="font-size:.75rem;font-weight:800;color:var(--ink);margin-bottom:7px;padding-bottom:5px;border-bottom:1.5px solid var(--border)">📋 Valores globales</div>
+    <div class="lab-row3">
+      <div class="lab-f"><div class="lab-l">Grasa corporal (%)</div><input class="lab-i" type="number" id="labPctGrasa" placeholder="ej: 38.5" step="0.1"></div>
+      <div class="lab-f"><div class="lab-l">Masa grasa (kg)</div><input class="lab-i" type="number" id="labGrasa" placeholder="ej: 36.2" step="0.1"></div>
+      <div class="lab-f"><div class="lab-l">FFM — Masa libre de grasa (kg)</div><input class="lab-i" type="number" id="labFFM" placeholder="ej: 57.8" step="0.1"></div>
+    </div>
+    <div class="lab-row3">
+      <div class="lab-f"><div class="lab-l">Masa muscular total (kg)</div><input class="lab-i" type="number" id="labMuscTotal" placeholder="ej: 54.3" step="0.1"><div class="lab-hint">Impresión: «Muscle Mass»</div></div>
+      <div class="lab-f"><div class="lab-l">Masa ósea (kg)</div><input class="lab-i" type="number" id="labHueso" placeholder="ej: 3.5" step="0.1"><div class="lab-hint">Impresión: «Bone Mass»</div></div>
+      <div class="lab-f"><div class="lab-l">Agua corporal total (L)</div><input class="lab-i" type="number" id="labAgua" placeholder="ej: 42.3" step="0.1"><div class="lab-hint">Impresión: «Total Body Water»</div></div>
+    </div>
+    <div class="lab-row3">
+      <div class="lab-f"><div class="lab-l">Grasa visceral (nivel 1-59)</div><input class="lab-i" type="number" id="labVisceral" placeholder="ej: 12" step="1" min="1" max="59"><div class="lab-hint">Impresión: «Visceral Fat Rating»</div></div>
+      <div class="lab-f"><div class="lab-l">TMB — Metabolismo basal (kcal)</div><input class="lab-i" type="number" id="labTMB" placeholder="ej: 1580" step="1"><div class="lab-hint">Impresión: «BMR»</div></div>
+      <div class="lab-f"><div class="lab-l">Edad metabólica (años)</div><input class="lab-i" type="number" id="labEdadMet" placeholder="ej: 62" step="1"><div class="lab-hint">Impresión: «Metabolic Age»</div></div>
+    </div>
+
+    <div style="font-size:.75rem;font-weight:800;color:var(--ink);margin:12px 0 7px;padding-bottom:5px;border-bottom:1.5px solid var(--border)">📐 Valores segmentales — Masa muscular por segmento (kg)</div>
+    <div style="font-size:.7rem;color:var(--ink3);margin-bottom:8px">La BC-613 imprime «Muscle Mass» independiente para cada extremidad y tronco. Introduce los cuatro apendiculares — el ASMI se calcula solo.</div>
+
+    <div style="font-size:.72rem;font-weight:700;color:var(--ink2);margin-bottom:5px">Extremidades superiores</div>
+    <div class="lab-row">
+      <div class="lab-f">
+        <div class="lab-l">Brazo derecho (kg)</div>
+        <input class="lab-i" type="number" id="labBD" placeholder="ej: 1.82" step="0.01">
+        <div class="lab-hint">Sección «R. Arm» · Muscle Mass</div>
+      </div>
+      <div class="lab-f">
+        <div class="lab-l">Brazo izquierdo (kg)</div>
+        <input class="lab-i" type="number" id="labBI" placeholder="ej: 1.76" step="0.01">
+        <div class="lab-hint">Sección «L. Arm» · Muscle Mass</div>
+      </div>
+    </div>
+    <div style="font-size:.72rem;font-weight:700;color:var(--ink2);margin-bottom:5px">Extremidades inferiores</div>
+    <div class="lab-row">
+      <div class="lab-f">
+        <div class="lab-l">Pierna derecha (kg)</div>
+        <input class="lab-i" type="number" id="labPD" placeholder="ej: 7.41" step="0.01">
+        <div class="lab-hint">Sección «R. Leg» · Muscle Mass</div>
+      </div>
+      <div class="lab-f">
+        <div class="lab-l">Pierna izquierda (kg)</div>
+        <input class="lab-i" type="number" id="labPI" placeholder="ej: 7.15" step="0.01">
+        <div class="lab-hint">Sección «L. Leg» · Muscle Mass</div>
+      </div>
+    </div>
+    <div style="font-size:.72rem;font-weight:700;color:var(--ink2);margin-bottom:5px">Tronco (informativo, no entra en ASMI)</div>
+    <div class="lab-row">
+      <div class="lab-f">
+        <div class="lab-l">Tronco (kg)</div>
+        <input class="lab-i" type="number" id="labTronco" placeholder="ej: 25.8" step="0.01">
+        <div class="lab-hint">Sección «Trunk» · Muscle Mass</div>
+      </div>
+      <div class="lab-f">
+        <div class="lab-l">ASMI calculado (kg/m²)</div>
+        <input class="lab-i" id="labASMIcalc" placeholder="— se calcula automáticamente" readonly
+          style="background:var(--info-bg);border-color:var(--info-bdr);font-weight:700;cursor:default">
+        <div class="lab-hint">ASMM÷altura² · se actualiza al rellenar segmentos</div>
+      </div>
+    </div>
+    <div style="font-size:.72rem;font-weight:700;color:var(--ink2);margin-bottom:5px">Grasa visceral segmental (informativo)</div>
+    <div class="lab-row3">
+      <div class="lab-f"><div class="lab-l">% grasa brazo D</div><input class="lab-i" type="number" id="labGBD" placeholder="ej: 28.4" step="0.1"></div>
+      <div class="lab-f"><div class="lab-l">% grasa brazo I</div><input class="lab-i" type="number" id="labGBI" placeholder="ej: 29.1" step="0.1"></div>
+      <div class="lab-f"><div class="lab-l">% grasa tronco</div><input class="lab-i" type="number" id="labGTronco" placeholder="ej: 35.2" step="0.1"></div>
+    </div>
+    <div class="lab-row">
+      <div class="lab-f"><div class="lab-l">% grasa pierna D</div><input class="lab-i" type="number" id="labGPD" placeholder="ej: 41.2" step="0.1"></div>
+      <div class="lab-f"><div class="lab-l">% grasa pierna I</div><input class="lab-i" type="number" id="labGPI" placeholder="ej: 40.8" step="0.1"></div>
+    </div>
+  </div>
+
+  <div class="lab-card">
+    <div class="lab-card-h">✊ Dinamómetro Jamar — Fuerza de prensión</div>
+    <div style="font-size:.72rem;color:var(--ink3);margin-bottom:9px;line-height:1.45">
+      Mano dominante, 3 intentos. Registrar el mejor valor. Paciente sentado, codo a 90°, muñeca neutra. Umbral EWGSOP2: &lt;27 kg ♂ · &lt;16 kg ♀
+    </div>
+    <div class="lab-row3">
+      <div class="lab-f"><div class="lab-l">Intento 1 (kg)</div><input class="lab-i" type="number" id="labJ1" placeholder="24.5" step="0.1"></div>
+      <div class="lab-f"><div class="lab-l">Intento 2 (kg)</div><input class="lab-i" type="number" id="labJ2" placeholder="25.0" step="0.1"></div>
+      <div class="lab-f"><div class="lab-l">Intento 3 (kg)</div><input class="lab-i" type="number" id="labJ3" placeholder="24.8" step="0.1"></div>
+    </div>
+    <div class="lab-row">
+      <div class="lab-f">
+        <div class="lab-l">Mano no dominante — mejor (kg) opc.</div>
+        <input class="lab-i" type="number" id="labJND" placeholder="opc." step="0.1">
+      </div>
+      <div class="lab-f">
+        <div class="lab-l">Mano dominante</div>
+        <select class="lab-sel" id="labMano">
+          <option value="D">Derecha</option>
+          <option value="I">Izquierda</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+
+  <div class="lab-card" id="labPerfCard">
+    <div class="lab-card-h">🚶 Rendimiento físico — del brazo clínico</div>
+    <div id="labPerfContent" style="font-size:.78rem;color:var(--ink2);line-height:1.6">
+      Vincula un paciente para cargar automáticamente los datos de rendimiento físico de su evaluación clínica (5-STS, velocidad de marcha).<br>
+      <span style="font-size:.7rem;color:var(--ink3)">Estos datos pertenecen al brazo clínico del protocolo. Se usan aquí solo para determinar la gravedad EWGSOP2.</span>
+    </div>
+  </div>
+
+  <button class="lab-btn" onclick="calcLab()">🔬 Calcular diagnóstico EWGSOP2 →</button>
+  <div id="labResult"></div>
+  <div class="lab-saved" id="labSaved">✅ Datos guardados en el paciente y en Investigación.</div>
+  `;
+
+  // Auto-calculate ASMI live when segmental values change
+  ['labBD','labBI','labPD','labPI'].forEach(function(id){
+    const el=document.getElementById(id);
+    if(el) el.addEventListener('input', function(){
+      const bd2=parseFloat(document.getElementById('labBD')?.value||0)||0;
+      const bi2=parseFloat(document.getElementById('labBI')?.value||0)||0;
+      const pd2=parseFloat(document.getElementById('labPD')?.value||0)||0;
+      const pi2=parseFloat(document.getElementById('labPI')?.value||0)||0;
+      const alt2=parseFloat(document.getElementById('labAltura')?.value||0)||0;
+      const asmi2el=document.getElementById('labASMIcalc');
+      if((bd2||bi2||pd2||pi2)&&alt2){
+        const asmm2=bd2+bi2+pd2+pi2;
+        const asmi2=asmm2/Math.pow(alt2/100,2);
+        const sexo2=document.getElementById('labSexo')?.value||'H';
+        const cut2=sexo2==='H'?7.0:5.5;
+        if(asmi2el) asmi2el.value=asmm2.toFixed(2)+' kg → ASMI '+asmi2.toFixed(2)+' kg/m² '+(asmi2<cut2?'⚠ BAJO':'✓ Normal');
+      } else if(asmi2el) asmi2el.value='';
+    });
+  });
+  document.getElementById('labAltura')?.addEventListener('input', function(){
+    document.getElementById('labBD')?.dispatchEvent(new Event('input'));
+  });
+  document.getElementById('labSexo')?.addEventListener('change', function(){
+    document.getElementById('labBD')?.dispatchEvent(new Event('input'));
+  });
+
+  // If patient selected, prefill data
+  document.getElementById('labPtSel').addEventListener('change', function(){
+    if(idx === '') return;
+    const pt = labPatients[idx];
+    if(!pt || !pt.visits.length) return;
+    const last = pt.visits[pt.visits.length-1];
+    const d = last.data;
+    if(d.sexo) document.getElementById('labSexo').value = d.sexo;
+    if(d.altura) document.getElementById('labAltura').value = d.altura;
+    if(d.edad) document.getElementById('labEdad').value = d.edad;
+    if(d.peso) document.getElementById('labPeso').value = d.peso;
+    // Load clinical performance data (brazo clínico)
+    const perfDiv = document.getElementById('labPerfContent');
+    if(perfDiv){
+      const sts = d.sts;
+      const vel = d.vel; // if added to chat later
+      let perfHtml = '<div style="margin-top:4px">';
+      if(sts!==null&&sts!==undefined){
+        const stsCls = sts>=20?'err':sts>=12?'warn':'ok';
+        const stsLbl = sts>=20?'≥20 s — Grave':sts>=12?'≥12 s — Fuerza alterada':'<12 s — Normal';
+        perfHtml += '<div class="lab-crit-row"><span class="lab-crit-k">5-STS (brazo clínico)</span><span class="lab-crit-v">'+sts+' s <span class="tag t-'+stsCls+'">'+stsLbl+'</span></span></div>';
+      } else {
+        perfHtml += '<div style="color:var(--ink3);font-size:.75rem">⚠ 5-STS no registrado en la evaluación clínica de este paciente.</div>';
+      }
+      const vel2 = d.vel;
+      if(vel2!==null&&vel2!==undefined){
+        const velCls = vel2<=0.8?'err':'ok';
+        perfHtml += '<div class="lab-crit-row"><span class="lab-crit-k">Velocidad marcha (brazo clínico)</span><span class="lab-crit-v">'+vel2+' m/s <span class="tag t-'+velCls+'">'+(vel2<=0.8?'≤0,8 m/s — Bajo':'Normal')+'</span></span></div>';
+      }
+      perfHtml += '</div>';
+      if(sts!==null||vel2!==null) perfDiv.innerHTML = perfHtml;
+    }
+    // Store for calcLab
+    window._labClinicSTS  = d.sts;
+    window._labClinicVel  = d.vel||null;
+    window._labClinicSPPB = d.sppb||null;
+  });
+}
+
+function nLab(id){ const v=parseFloat(document.getElementById(id)?.value); return isNaN(v)?null:v; }
+function sLab(id){ return document.getElementById(id)?.value||''; }
+function tagL(t,c){ return '<span class="tag t-'+c+'">'+t+'</span>'; }
+
+function calcLab(){
+  const sexo  = sLab('labSexo');
+  const alt   = nLab('labAltura');
+  const edad  = nLab('labEdad');
+  const peso  = nLab('labPeso');
+
+  // ASMM: from segmental limb values (BC-613 output)
+  const bd=nLab('labBD'),bi=nLab('labBI'),pd=nLab('labPD'),pi=nLab('labPI');
+  let asmm = null;
+  if(bd||bi||pd||pi) asmm = (bd||0)+(bi||0)+(pd||0)+(pi||0);
+  // Also read global fields
+  const grasa    = nLab('labGrasa');
+  const ffm      = nLab('labFFM');
+  const muscTotal= nLab('labMuscTotal');
+  const hueso    = nLab('labHueso');
+  const agua     = nLab('labAgua');
+  const visceral = nLab('labVisceral');
+  const tmb      = nLab('labTMB');
+  const edadMet  = nLab('labEdadMet');
+  const pctGrasa = nLab('labPctGrasa');
+  const tronco   = nLab('labTronco');
+
+  // Dynamometer
+  const j1=nLab('labJ1'),j2=nLab('labJ2'),j3=nLab('labJ3');
+  const jBest = [j1,j2,j3].filter(Boolean).length ? Math.max(...[j1,j2,j3].filter(v=>v!==null)) : null;
+  const jnd   = nLab('labJND');
+
+  // Physical performance
+  // Physical performance: always from clinical arm (not apparatus)
+  const vel  = window._labClinicVel  || null;
+  const sppb = window._labClinicSPPB || null;
+  const sts  = window._labClinicSTS  !== undefined ? window._labClinicSTS : null;
+
+  if(!alt){ alert('La altura es necesaria para calcular ASMI.'); return; }
+
+  // ── EWGSOP2 CRITERIA ──
+  const esMale = sexo === 'H';
+
+  // 1. LOW MUSCLE STRENGTH
+  const gripLow = jBest !== null && (esMale ? jBest < 27 : jBest < 16);
+  const stsLow  = sts !== null && sts >= 12;
+  const lowStrength = gripLow || stsLow;
+
+  // 2. LOW MUSCLE QUANTITY (BIA)
+  const asmi = asmm ? asmm / Math.pow(alt/100, 2) : null;
+  const asmiCut = esMale ? 7.0 : 5.5;
+  const lowMass = asmi !== null && asmi < asmiCut;
+
+  // ALT index (FNIH alternate): ALM/BMI
+  const bmi = (peso && alt) ? peso/Math.pow(alt/100,2) : null;
+  const fnih = (asmm && bmi) ? asmm/bmi : null;
+  const fnihCut = esMale ? 0.789 : 0.512;
+  const lowMassFNIH = fnih !== null && fnih < fnihCut;
+
+  // 3. LOW PHYSICAL PERFORMANCE
+  const velLow  = vel !== null && vel <= 0.8;
+  const sppbLow = sppb !== null && sppb <= 8;
+  const stsSev  = sts !== null && sts >= 20;
+  const lowPerf = velLow || sppbLow || stsSev;
+
+  // ── DIAGNOSIS ──
+  let stage, stageClass, stageDesc;
+  if(!lowStrength && !lowMass){
+    stage='Sin sarcopenia';stageClass='sarco-n';
+    stageDesc='Fuerza de prensión y masa muscular apendicular dentro de umbrales. No se cumplen criterios EWGSOP2.';
+  } else if(lowStrength && !lowMass){
+    stage='Sarcopenia probable';stageClass='sarco-p';
+    stageDesc='Baja fuerza muscular sin confirmación de baja masa por BIA. Repetir BIA si sospecha clínica alta.';
+  } else if((lowStrength || lowMass) && lowMass){
+    if(lowPerf){
+      stage='Sarcopenia grave';stageClass='sarco-s';
+      stageDesc='Confirmada por BIA + fuerza baja. Bajo rendimiento físico presente. Máximo riesgo funcional.';
+    } else if(lowStrength){
+      stage='Sarcopenia confirmada';stageClass='sarco-c';
+      stageDesc='Baja fuerza + baja masa muscular apendicular por BIA. Criterio EWGSOP2 cumplido.';
+    } else {
+      stage='Baja masa muscular';stageClass='sarco-p';
+      stageDesc='ASMI bajo sin alteración de fuerza. Vigilar evolución. Pre-sarcopenia (nomenclatura EWGSOP1).';
+    }
+  }
+
+  // ── RESULT HTML ──
+  let h='<div class="sarco-card" style="margin-top:10px">';
+  h+='<div class="sarco-top '+stageClass+'"><div class="sarco-lbl">Diagnóstico EWGSOP2 2019</div><div class="sarco-val">'+stage+'</div></div>';
+  h+='<div class="sarco-body">';
+  h+=stageDesc;
+  h+='<div style="margin-top:11px;border-top:1px solid var(--border);padding-top:9px">';
+
+  // Criterios detalle
+  if(jBest!==null){
+    const cut=esMale?27:16;
+    h+='<div class="lab-crit-row"><span class="lab-crit-k">Prensión '+sLab('labMano')+'</span><span class="lab-crit-v">'+jBest.toFixed(1)+' kg '+tagL(jBest<cut?'<'+cut+' — BAJO':'≥'+cut+' — Normal',jBest<cut?'err':'ok')+'</span></div>';
+  }
+  if(asmi!==null){
+    h+='<div class="lab-crit-row"><span class="lab-crit-k">ASMI ('+asmm.toFixed(1)+'/'+Math.pow(alt/100,2).toFixed(2)+')</span><span class="lab-crit-v">'+asmi.toFixed(2)+' kg/m² '+tagL(asmi<asmiCut?'<'+asmiCut+' — BAJO':'≥'+asmiCut+' — Normal',asmi<asmiCut?'err':'ok')+'</span></div>';
+  }
+  if(fnih!==null){
+    h+='<div class="lab-crit-row"><span class="lab-crit-k">ASMM/IMC (FNIH)</span><span class="lab-crit-v">'+fnih.toFixed(3)+' '+tagL(fnih<fnihCut?'<'+fnihCut+' — BAJO':'Normal',fnih<fnihCut?'warn':'ok')+'</span></div>';
+  }
+  if(sts!==null){
+    h+='<div class="lab-crit-row"><span class="lab-crit-k">5-STS</span><span class="lab-crit-v">'+sts+' s '+tagL(sts>=20?'≥20 s — Grave':sts>=12?'≥12 s — Alterado':'<12 s — Normal',sts>=20?'err':sts>=12?'warn':'ok')+'</span></div>';
+  }
+  if(vel!==null){
+    h+='<div class="lab-crit-row"><span class="lab-crit-k">Velocidad marcha</span><span class="lab-crit-v">'+vel+' m/s '+tagL(vel<=0.8?'≤0,8 — Bajo rendimiento':'Normal',vel<=0.8?'err':'ok')+'</span></div>';
+  }
+  if(sppb!==null){
+    h+='<div class="lab-crit-row"><span class="lab-crit-k">SPPB</span><span class="lab-crit-v">'+sppb+'/12 '+tagL(sppb<=8?'≤8 — Bajo rendimiento':'Normal',sppb<=8?'err':'ok')+'</span></div>';
+  }
+  if(grasa){
+    const pct = peso ? Math.round(grasa/peso*1000)/10 : null;
+    const grasaStr=pct?grasa+' kg ('+pct+'%)':grasa+' kg'; h+='<div class="lab-crit-row"><span class="lab-crit-k">Masa grasa</span><span class="lab-crit-v">'+grasaStr+'</span></div>';
+  }
+  if(pctGrasa) h+='<div class="lab-crit-row"><span class="lab-crit-k">% Grasa corporal (BC-613)</span><span class="lab-crit-v">'+pctGrasa+'%</span></div>';
+  if(muscTotal) h+='<div class="lab-crit-row"><span class="lab-crit-k">Masa muscular total (BC-613)</span><span class="lab-crit-v">'+muscTotal+' kg</span></div>';
+  if(hueso) h+='<div class="lab-crit-row"><span class="lab-crit-k">Masa ósea</span><span class="lab-crit-v">'+hueso+' kg</span></div>';
+  if(ffm) h+='<div class="lab-crit-row"><span class="lab-crit-k">FFM (masa libre de grasa)</span><span class="lab-crit-v">'+ffm+' kg</span></div>';
+  if(agua) h+='<div class="lab-crit-row"><span class="lab-crit-k">Agua corporal total</span><span class="lab-crit-v">'+agua+' L</span></div>';
+  if(visceral){
+    const vCls=visceral>=13?'err':visceral>=9?'warn':'ok';
+    const vLbl=visceral>=13?'Alto ≥13':visceral>=9?'Elevado 9–12':'Normal <9';
+    h+='<div class="lab-crit-row"><span class="lab-crit-k">Grasa visceral (nivel)</span><span class="lab-crit-v">'+visceral+' '+tagL(vLbl,vCls)+'</span></div>';
+  }
+  if(tmb) h+='<div class="lab-crit-row"><span class="lab-crit-k">TMB basal (BC-613)</span><span class="lab-crit-v">'+tmb+' kcal/día</span></div>';
+  if(edadMet&&edad){
+    const dif=edadMet-edad;
+    h+='<div class="lab-crit-row"><span class="lab-crit-k">Edad metabólica</span><span class="lab-crit-v">'+edadMet+' años '+tagL(dif>0?'+'+dif+' vs real':dif===0?'= edad real':dif+' vs real',dif>5?'warn':dif>0?'info':'ok')+'</span></div>';
+  }
+  if(asmm&&bd&&bi&&pd&&pi){
+    h+='<div class="lab-crit-row"><span class="lab-crit-k">Segmentos musculares</span><span class="lab-crit-v">BD '+bd.toFixed(2)+' · BI '+bi.toFixed(2)+' · PD '+pd.toFixed(2)+' · PI '+pi.toFixed(2)+' kg</span></div>';
+    if(tronco) h+='<div class="lab-crit-row"><span class="lab-crit-k">Tronco (no entra ASMI)</span><span class="lab-crit-v">'+tronco.toFixed(2)+' kg</span></div>';
+  }
+
+  h+='</div>';
+
+  // Cutoffs reference
+  h+='<div style="margin-top:10px;padding:8px 10px;background:var(--surf2);border-radius:var(--r-xs);font-size:.72rem;color:var(--ink3);line-height:1.6">';
+  h+='<strong>Umbrales EWGSOP2 2019:</strong> ';
+  h+='Prensión '+(esMale?'♂ <27 kg':'♀ <16 kg')+' · ASMI '+(esMale?'♂ <7,0 kg/m²':'♀ <5,5 kg/m²')+' · 5-STS ≥12 s (fuerza), ≥20 s (grave) · Velocidad ≤0,8 m/s · SPPB ≤8. ';
+  h+='<em>Cruz-Jentoft AJ et al. Age Ageing. 2019;48(1):16-31.</em></div>';
+
+  h+='</div></div>';
+
+  // Save section
+  h+='<div style="margin-top:10px">';
+  h+='<button class="lab-btn" style="background:linear-gradient(135deg,#1565c0,#0d47a1)" onclick="saveLabData('+JSON.stringify({
+    sexo, alt, edad, peso, asmm, asmi, grasa, agua,
+    jBest, jnd, j1, j2, j3, vel, sppb, sts,
+    stage, lowStrength, lowMass, lowPerf,
+    gripLow, stsLow
+  }).replace(/"/g,"'")+')">💾 Guardar en paciente e Investigación →</button>';
+  h+='</div>';
+
+  document.getElementById('labResult').innerHTML = h;
+  document.getElementById('labSaved').style.display = 'none';
+}
+
+async function saveLabData(d){
+  const ptSel = document.getElementById('labPtSel').value;
+  const labVisit = {
+    date: new Date().toISOString(),
+    type: 'lab',
+    data: d,
+    diagnosis: d.stage,
+    sarcoLab: d.stage !== 'Sin sarcopenia' && d.stage !== 'Baja masa muscular',
+    sarcoLabConfirmed: d.stage === 'Sarcopenia confirmada' || d.stage === 'Sarcopenia grave'
+  };
+
+  if(ptSel !== '' && labPatients[ptSel]){
+    const pt = labPatients[ptSel];
+    if(!pt.labVisits) pt.labVisits = [];
+    pt.labVisits.push(labVisit);
+    // Also update last clinical visit goldStandard if not set
+    if(pt.visits && pt.visits.length){
+      const lastV = pt.visits[pt.visits.length-1];
+      if(lastV.goldStandard === 'nd'){
+        lastV.goldStandard = labVisit.sarcoLabConfirmed ? 'si' : 'no';
+        lastV.goldStandardSource = 'BIA+Jamar (auto)';
+      }
+    }
+    await dbPut('patients', pt);
+    document.getElementById('labSaved').style.display = 'block';
+    document.getElementById('labSaved').innerHTML = '✅ Datos guardados en <strong>'+pt.name+'</strong> y actualizados en Investigación. El patrón oro se ha asignado automáticamente desde BIA+Jamar.';
+  } else {
+    // Save as standalone lab record without patient link
+    const rec = { id: uid(), type:'lab_standalone', date: new Date().toISOString(), labVisit };
+    await dbPut('patients', rec);
+    document.getElementById('labSaved').style.display = 'block';
+    document.getElementById('labSaved').innerHTML = '✅ Medición guardada sin vincular a paciente.';
+  }
+  updatePtCount();
+}
+
+// ═══════════════════════════════
+// GESTIÓN: ELIMINAR / REINICIAR
+// ═══════════════════════════════
+async function deletePatient(id, name){
+  const ok = confirm('¿Eliminar a ' + name + ' del registro?\n\nEsta acción no se puede deshacer. Los datos de Investigación también se perderán para este paciente.');
+  if(!ok) return;
+  await dbDelete('patients', id);
+  updatePtCount();
+  goView('vPat');
+}
+
+async function archivarYReiniciar(){
+  const pts = await dbAll('patients');
+  if(!pts.length){ alert('No hay pacientes guardados.'); return; }
+
+  const ok = confirm(
+    '⚠️  REINICIAR ESTUDIO\n\n' +
+    'Tienes ' + pts.length + ' paciente(s) registrado(s).\n\n' +
+    'Antes de reiniciar:\n' +
+    '1. Se descargará automáticamente el CSV completo como respaldo.\n' +
+    '2. Todos los registros se borrarán permanentemente.\n\n' +
+    '¿Continuar?'
+  );
+  if(!ok) return;
+
+  // Step 1: export CSV backup automatically
+  await exportCSV();
+
+  // Step 2: wait a moment then confirm again
+  await new Promise(r => setTimeout(r, 800));
+  const ok2 = confirm(
+    'El CSV se ha descargado. ¿Confirmas el borrado de todos los registros?\n\n' +
+    'Esta acción es IRREVERSIBLE.'
+  );
+  if(!ok2) return;
+
+  // Step 3: clear DB
+  await dbClearAll('patients');
+  updatePtCount();
+
+  // Step 4: go to research to show empty state
+  goView('vPat');
+  alert('✅ Estudio reiniciado. Registro vacío. El CSV de respaldo se ha guardado en tu dispositivo.');
+}
+
+// ═══════════════════════════════════════════
+// XLSX GENERATOR — Vanilla JS, no CDN
+// ZIP Store (method 0) + OpenXML SpreadsheetML
+// ═══════════════════════════════════════════
+
+// CRC32 lookup table
+const _crc32t=(function(){const t=new Uint32Array(256);for(let i=0;i<256;i++){let c=i;for(let j=0;j<8;j++)c=c&1?0xEDB88320^(c>>>1):c>>>1;t[i]=c;}return t;})();
+function _crc32(buf){let c=0xFFFFFFFF;for(let i=0;i<buf.length;i++)c=_crc32t[(c^buf[i])&0xFF]^(c>>>8);return(c^0xFFFFFFFF)>>>0;}
+
+function _u8(s){return new TextEncoder().encode(s);}
+function _i16(n,b,o){b[o]=n&0xFF;b[o+1]=(n>>8)&0xFF;}
+function _i32(n,b,o){b[o]=n&0xFF;b[o+1]=(n>>8)&0xFF;b[o+2]=(n>>16)&0xFF;b[o+3]=(n>>24)&0xFF;}
+
+function _zipEntry(name,data){
+  const nb=_u8(name);
+  const now=new Date();
+  const mtime=((now.getFullYear()-1980)<<9)|((now.getMonth()+1)<<5)|now.getDate();
+  const mdate=((now.getHours())<<11)|((now.getMinutes())<<5)|(now.getSeconds()>>1);
+  const crc=_crc32(data);
+  const lh=new Uint8Array(30+nb.length);
+  _i32(0x04034b50,lh,0); // local sig
+  _i16(20,lh,4);          // version needed
+  _i16(0,lh,6);           // flags
+  _i16(0,lh,8);           // method: store
+  _i16(mtime,lh,10);
+  _i16(mdate,lh,12);
+  _i32(crc,lh,14);
+  _i32(data.length,lh,18);
+  _i32(data.length,lh,22);
+  _i16(nb.length,lh,26);
+  _i16(0,lh,28);
+  lh.set(nb,30);
+  return {lh,data,crc,name:nb,size:data.length};
+}
+
+function _buildZip(files){
+  const entries=files.map(f=>_zipEntry(f.name,f.data));
+  let offset=0;
+  const parts=[]; const cdirs=[];
+  entries.forEach(function(e){
+    parts.push(e.lh,e.data);
+    const cd=new Uint8Array(46+e.name.length);
+    _i32(0x02014b50,cd,0);
+    _i16(20,cd,4);_i16(20,cd,6);_i16(0,cd,8);_i16(0,cd,10);
+    _i16(0,cd,12);_i16(0,cd,14);
+    _i32(e.crc,cd,16);
+    _i32(e.size,cd,20);_i32(e.size,cd,24);
+    _i16(e.name.length,cd,28);
+    _i16(0,cd,30);_i16(0,cd,32);_i16(0,cd,34);_i16(0,cd,36);
+    _i32(0,cd,38);_i32(offset,cd,42);
+    cd.set(e.name,46);
+    cdirs.push(cd);
+    offset+=e.lh.length+e.size;
+  });
+  const cdSize=cdirs.reduce(function(s,c){return s+c.length;},0);
+  const eod=new Uint8Array(22);
+  _i32(0x06054b50,eod,0);
+  _i16(0,eod,4);_i16(0,eod,6);
+  _i16(entries.length,eod,8);_i16(entries.length,eod,10);
+  _i32(cdSize,eod,12);_i32(offset,eod,16);_i16(0,eod,20);
+  const all=[...parts,...cdirs,eod];
+  const total=all.reduce(function(s,a){return s+a.length;},0);
+  const out=new Uint8Array(total);
+  let pos=0;
+  all.forEach(function(a){out.set(a,pos);pos+=a.length;});
+  return out;
+}
+
+function _xlsxColName(i){
+  let s='';
+  i++;
+  while(i>0){s=String.fromCharCode(65+(i-1)%26)+s;i=Math.floor((i-1)/26);}
+  return s;
+}
+
+function buildXLSX(sheetName,headers,rows){
+  // shared strings
+  const ss=[]; const ssIdx={};
+  function sid(v){const s=String(v);if(ssIdx[s]===undefined){ssIdx[s]=ss.length;ss.push(s);}return ssIdx[s];}
+  headers.forEach(function(h){sid(h);});
+  rows.forEach(function(r){r.forEach(function(c){if(typeof c==='string'||c===null||c===undefined)sid(c!==null&&c!==undefined?c:'');});});
+
+  // sheet xml
+  let sheetXml='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>';
+  sheetXml+='<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">';
+  sheetXml+='<sheetData>';
+  // header row
+  sheetXml+='<row r="1">';
+  headers.forEach(function(h,i){sheetXml+='<c r="'+_xlsxColName(i)+'1" t="s" s="1"><v>'+sid(h)+'</v></c>';});
+  sheetXml+='</row>';
+  // data rows
+  rows.forEach(function(row,ri){
+    sheetXml+='<row r="'+(ri+2)+'">';
+    row.forEach(function(cell,ci){
+      const col=_xlsxColName(ci);
+      const rn=ri+2;
+      if(cell===null||cell===undefined||cell===''){
+        sheetXml+='<c r="'+col+rn+'" t="s"><v>'+sid('')+'</v></c>';
+      } else if(typeof cell==='number'){
+        sheetXml+='<c r="'+col+rn+'"><v>'+cell+'</v></c>';
+      } else {
+        sheetXml+='<c r="'+col+rn+'" t="s"><v>'+sid(String(cell))+'</v></c>';
+      }
+    });
+    sheetXml+='</row>';
+  });
+  sheetXml+='</sheetData></worksheet>';
+
+  const ssXml='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><sst xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" count="'+ss.length+'" uniqueCount="'+ss.length+'">'+ss.map(function(s){return '<si><t xml:space="preserve">'+s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')+'</t></si>';}).join('')+'</sst>';
+
+  const stylesXml='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><fonts><font><b/><color rgb="FF0D47A1"/><name val="Arial"/><sz val="10"/></font><font><name val="Arial"/><sz val="10"/></font></fonts><fills><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill><fill><patternFill patternType="solid"><fgColor rgb="FFE3F2FD"/></patternFill></fill></fills><borders><border><left/><right/><top/><bottom/><diagonal/></border></borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs><xf numFmtId="0" fontId="1" fillId="0" borderId="0" xfId="0"/><xf numFmtId="0" fontId="0" fillId="2" borderId="0" xfId="0"/></cellXfs></styleSheet>';
+
+  const wbXml='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="'+sheetName+'" sheetId="1" r:id="rId1"/></sheets></workbook>';
+  const wbRels='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/sharedStrings" Target="sharedStrings.xml"/><Relationship Id="rId3" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>';
+  const rels='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>';
+  const ct='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/><Override PartName="/xl/sharedStrings.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sharedStrings+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/></Types>';
+
+  const zip=_buildZip([
+    {name:'[Content_Types].xml',    data:_u8(ct)},
+    {name:'_rels/.rels',            data:_u8(rels)},
+    {name:'xl/workbook.xml',        data:_u8(wbXml)},
+    {name:'xl/_rels/workbook.xml.rels', data:_u8(wbRels)},
+    {name:'xl/worksheets/sheet1.xml',   data:_u8(sheetXml)},
+    {name:'xl/sharedStrings.xml',   data:_u8(ssXml)},
+    {name:'xl/styles.xml',          data:_u8(stylesXml)}
+  ]);
+  return zip;
+}
+
+function downloadBlob(name,blob){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;a.click();setTimeout(function(){URL.revokeObjectURL(a.href);},1000);}
+
+// ── EXPORT XLSX (todos los pacientes) ──
+async function exportXLSX(){
+  const pts=await dbAll('patients');
+  if(!pts.length){alert('No hay pacientes guardados.');return;}
+  const headers=['N_Orden','Iniciales','N_Historia','ID','Fecha','Sexo','Edad','Peso_kg','Altura_cm','IMC','Cintura_cm','RCA','MasaMagra_kg','MasaGrasa_kg','PctGrasa','SARC_F','STS_s','VelMarcha_ms','SCORE2_pct','SCORE2_cat','Glucosa','HbA1c','LDL','TG','VitD','Diagnostico','Sarcopenia_sospecha','Patron_oro'];
+  const rows=[];
+  pts.forEach(function(pt){
+    pt.visits&&pt.visits.forEach(function(v){
+      const d=v.data||{};
+      rows.push([
+        pt.orden||'',pt.iniciales||'',pt.hc||'',pt.extId||pt.id.slice(0,8),new Date(v.date).toLocaleDateString('es-ES'),
+        d.sexo||'',d.edad||'',d.peso||'',d.altura||'',d.imc?Math.round(d.imc*100)/100:'',
+        d.cintura||'',d.rca?Math.round(d.rca*1000)/1000:'',
+        d.lbm?Math.round(d.lbm*10)/10:'',d.fbm?Math.round(d.fbm*10)/10:'',d.fatPct?Math.round(d.fatPct*10)/10:'',
+        d.sarcfScore!==null&&d.sarcfScore!==undefined?d.sarcfScore:'',
+        d.sts!==null&&d.sts!==undefined?d.sts:'',
+        d.vel!==null&&d.vel!==undefined?d.vel:'',
+        d.score2Pct||'',d.score2Cat||'',
+        d.aGluc||'',d.aHba1c||'',d.aLdl||'',d.aTg||'',d.aVitD||'',
+        v.diagnosis||'',
+        v.sarcoSuspected?1:0,
+        v.goldStandard==='si'?1:v.goldStandard==='no'?0:''
+      ]);
+    });
+  });
+  const xlsx=buildXLSX('Pacientes',headers,rows);
+  downloadBlob('ObesClinPro_pacientes_'+new Date().toISOString().slice(0,10)+'.xlsx',new Blob([xlsx],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}));
+}
+
+// ── EXPORT PDF (informe HTML imprimible) ──
+async function exportPDF(){
+  const pts=await dbAll('patients');
+  if(!pts.length){alert('No hay pacientes guardados.');return;}
+  let html='<div class="pr-h1">ObesClin Pro · Informe de pacientes</div>';
+  html+='<div class="pr-meta">Exportado: '+new Date().toLocaleDateString('es-ES',{weekday:'long',year:'numeric',month:'long',day:'numeric'})+' · Total pacientes: '+pts.length+'</div>';
+  pts.forEach(function(pt){
+    if(!pt.visits||!pt.visits.length)return;
+    const last=pt.visits[pt.visits.length-1];
+    const d=last.data||{};
+    html+='<div class="pr-h2">'+pt.name+(pt.extId?' · #'+pt.extId:'')+'</div>';
+    html+='<table class="pr-table"><thead><tr><th>Campo</th><th>Valor</th><th>Campo</th><th>Valor</th></tr></thead><tbody>';
+    const pairs=[
+      ['Sexo',d.sexo==='H'?'♂ Hombre':d.sexo==='M'?'♀ Mujer':'—'],
+      ['Edad',d.edad?d.edad+' años':'—'],
+      ['Peso',d.peso?d.peso+' kg':'—'],
+      ['Altura',d.altura?d.altura+' cm':'—'],
+      ['IMC',d.imc?d.imc.toFixed(1)+' kg/m²':'—'],
+      ['RCA',d.rca?d.rca.toFixed(3):'—'],
+      ['Masa magra (Janmahasatian)',d.lbm?d.lbm.toFixed(1)+' kg':'—'],
+      ['Masa grasa',d.fbm?d.fbm.toFixed(1)+' kg ('+d.fatPct.toFixed(1)+'%)':'—'],
+      ['SARC-F',d.sarcfScore!==null&&d.sarcfScore!==undefined?d.sarcfScore+'/10':'—'],
+      ['5-STS',d.sts!==null&&d.sts!==undefined?d.sts+' s':'—'],
+      ['Velocidad marcha',d.vel?d.vel+' m/s':'—'],
+      ['SCORE2',d.score2Pct?d.score2Pct+'% ('+d.score2Cat+')':d.score2Cat||'—'],
+      ['Glucosa',d.aGluc?d.aGluc+' mg/dL':'—'],
+      ['HbA1c',d.aHba1c?d.aHba1c+'%':'—'],
+      ['LDL',d.aLdl?d.aLdl+' mg/dL':'—'],
+      ['TG',d.aTg?d.aTg+' mg/dL':'—'],
+      ['Vitamina D',d.aVitD?d.aVitD+' ng/mL':'—'],
+      ['TSH',d.aTsh?d.aTsh+' mUI/L':'—'],
+      ['Sarcopenia sospecha',last.sarcoSuspected?'Sí':'No'],
+      ['Patrón oro',last.goldStandard==='si'?'Confirmada':last.goldStandard==='no'?'Descartada':'No disponible']
+    ];
+    for(let i=0;i<pairs.length;i+=2){
+      html+='<tr><td><strong>'+pairs[i][0]+'</strong></td><td>'+pairs[i][1]+'</td>';
+      if(pairs[i+1])html+='<td><strong>'+pairs[i+1][0]+'</strong></td><td>'+pairs[i+1][1]+'</td>';
+      else html+='<td></td><td></td>';
+      html+='</tr>';
+    }
+    html+='</tbody></table>';
+    html+='<div style="margin-bottom:4px"><strong>Diagnóstico:</strong> '+last.diagnosis+'</div>';
+    html+='<div style="margin-bottom:16px;font-size:.78rem;color:#607d8f">Última visita: '+new Date(last.date).toLocaleDateString('es-ES',{year:'numeric',month:'long',day:'numeric'})+'</div>';
+  });
+  html+='<div class="pr-footer">ObesClin Pro · Protocolo piloto sarcopenia · SESPA · Generado '+new Date().toLocaleDateString('es-ES')+'</div>';
+  document.getElementById('prContent').innerHTML=html;
+  document.getElementById('printReport').style.display='block';
+  setTimeout(function(){
+    window.print();
+    setTimeout(function(){document.getElementById('printReport').style.display='none';},1000);
+  },200);
+}
+</script>
+
+<!-- PROJECTION MODAL -->
+<div class="proj-ov" id="projOv" onclick="closeProjModal()">
+  <div class="proj-sheet" onclick="event.stopPropagation()">
+    <div class="proj-drag"></div>
+    <div class="proj-hdr">
+      <div class="proj-ttl">📉 Proyección pérdida de peso · 1 año</div>
+      <button class="proj-x" onclick="closeProjModal()">&#x2715;</button>
+    </div>
+    <div class="proj-body">
+      <div class="proj-peso">
+        <label>Peso del paciente: <strong id="projPesoLbl">95</strong> kg</label>
+        <input type="range" id="projSlider" min="60" max="180" step="1" value="95" oninput="updateProjChart()">
+        <div class="proj-badge"><div class="pv" id="projBadgePeso">95</div><div class="pl">kg inicio</div></div>
+      </div>
+      <div id="projChartWrap"></div>
+      <div class="proj-note">
+        ⚠️ Medias de ensayos clínicos publicados. La pérdida real varía según adherencia y comorbilidades.<br>
+        GLP-1 RA y tirzepatida requieren titulación progresiva; pérdida máxima a los 8–12 meses.<br>
+        Todos los tratamientos farmacológicos deben asociarse a cambios de estilo de vida.<br>
+        Fuentes: STEP 1 (Wegovy), SURMOUNT-1 (Mounjaro), SCALE (Saxenda), COR-I (Mysimba), XENDOS (Orlistat), STAMPEDE (Bypass).
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PDF PRINT REPORT -->
+<div id="printReport">
+  <div id="prContent"></div>
+</div>
+</body>
+</html>
